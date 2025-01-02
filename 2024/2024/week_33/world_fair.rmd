@@ -1,0 +1,114 @@
+---
+title: World Fairs
+---
+
+
+```{r}
+library(tidyverse)
+library(ggflags)
+library(janitor)
+library(ggiraph)
+library(htmlwidgets)
+library(htmltools)
+library(glue)
+library(ggtext)
+```
+
+
+```{r}
+worlds_fairs <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-08-13/worlds_fairs.csv')
+```
+
+```{r}
+c_codes <- read_csv("country-codes.csv") |> 
+    clean_names()
+```
+
+```{r}
+c_codes <- c_codes |> 
+    rename("country" = "english_short_name_lower_case")
+```
+
+
+```{r}
+worlds_fairs <- worlds_fairs %>%
+  mutate(country = if_else(country == "Colony of Victoria", "Australia",
+                    if_else(country == "West Germany", "Germany", 
+                    if_else(country == "People's Republic of China", "China", 
+                    if_else(country == "Austria-Hungary", "Austria",
+                    country)))))
+```
+```{r}
+df <- left_join(worlds_fairs,c_codes, by = "country")
+```
+
+
+
+```{r}
+df <- df |> 
+    mutate(duration = abs(end_month - start_month))
+```
+
+
+
+```{r}
+df <- df |> 
+  mutate(alpha_2_code = str_to_lower(alpha_2_code))
+```
+
+
+```{r}
+
+title <- "World's Fairs"
+
+subtitle <- glue("A world's fair, also known as a universal exhibition or an expo, is a large global exhibition\n designed to showcase the achievements of nations.These exhibitions vary in character and are\n held in different parts of the world at a specific site for a period of time,typically between\n three and six months. The chart shows the relation between the No. of Visitors and \nthe Area of the Expo. ")
+
+caption <- glue("Data Source: Worls' Fairs/TidyTuesday week 33 2024\n Graphic: Deepali Kank")
+```
+
+
+
+```{r}
+g <- ggplot(df, aes(area, visitors)) +
+  geom_flag(aes(country = alpha_2_code), size = 5) 
+```
+
+```{r}
+my_gg <- g + 
+  geom_point_interactive(aes(tooltip = glue("City: {city}\nExpo: {name_of_exposition}\nDuration: {duration} months"), data_id = city),color = "#99582a",family = "Georgia", 
+    size = 1)+
+  theme_minimal()+
+  theme(text = element_text(color = "#1f3225", family = "Corbel"),
+        plot.background = element_rect(fill = bg_color, color = bg_color),
+        panel.background = element_rect(fill = bg_color, color = bg_color),
+        plot.title = element_text(size = 20, face = "bold"),
+        plot.subtitle = element_text(size = 10),
+        plot.caption = element_text(size = 7),
+        axis.title.y = element_text(size = 8),
+        axis.title.x = element_text(size = 8),
+        panel.grid.major.y = element_blank(), 
+        panel.grid.minor.y = element_blank(), 
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank())+
+  
+  labs(title = title, subtitle = subtitle,caption = caption, x = "Area in Hectres", y = "Visitors in Millions")
+d1 <- girafe(ggobj = my_gg,options = list(opts_sizing(rescale = FALSE)))
+```
+
+```{r}
+d1 %>% 
+  girafe_options(opts_tooltip(opacity = 0.8, 
+                              use_fill = T, 
+                              use_stroke = F, 
+                              css = "font-family: Corbel;color:white"),
+                 opts_hover_inv(css = "opacity:0.5"), 
+                 opts_hover(css = "fill:#4c6061;"))
+```
+
+
+
+
+
+
+
+

@@ -1,0 +1,106 @@
+---
+title: "monster movies"
+author: "Deepali Kank"
+date: "`r Sys.Date()`"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(showtext)
+library(ggbeeswarm)
+library(ragg)
+library(glue)
+library(ggtext)
+```
+
+
+```{r}
+font_add_google("Irish Grover","irish grover")
+showtext_auto()
+```
+
+
+```{r}
+title <- "Monster Madness (1915-2024)"
+st <- glue("Ratings for monster movies vary significantly across genres, with few titles achieving high acclaim. Notably, <span style='color:#FF7518'>movies</span> typically span the full range of ratings, while <span style='color:#7F00FF'>TV movies</span> and <span style='color:#3C9D3C'>videos</span> show a more constrained performance, generally clustering in the mid to low ratings, highlighting differing audience expectations and production values across formats.")
+cap <- "Data source: Internt Movie Database\n Graphic: Deepali Kank"
+```
+
+
+```{r}
+df <- read_csv("D:/TidyTuesday_2024/week_44/monster_movies.csv") |> 
+  filter(!is.na(genre1))
+```
+
+
+```{r}
+
+df <- df %>%
+  mutate(genre1 = ifelse(genre1 == "Musical", "Music", genre1)) %>%  # This line combines 'Musical' with 'Music'
+  group_by(genre1) %>%
+  mutate(median_rating = median(average_rating, na.rm = TRUE)) %>%
+  ungroup() %>%
+  mutate(genre1 = factor(genre1, levels = unique(genre1[order(median_rating, decreasing = TRUE)])))
+
+```
+
+```{r}
+p1 <- ggplot(df, aes(x = genre1, y = average_rating,color = title_type) )+
+  geom_beeswarm(size = 1.8, cex = 0.6, alpha = 0.7) +
+  coord_flip() +
+  scale_y_continuous(breaks = seq(0, 10, by = 1), limits = c(0, 10)) +
+  scale_color_manual(values = c("#FF7518","#7F00FF","#3C9D3C")) +
+  theme_minimal() +
+  theme(legend.position = "none",
+        legend.text = element_textbox_simple(color = "#e9ecef"),
+        axis.title.y = element_blank(),
+        panel.grid.major.y = element_line(color = "#3B3A3A"),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.x = element_blank(),
+        axis.text.y = element_text(color = "#e9ecef", family = "irish grover" , size = 20, face = "bold"),
+        axis.text.x = element_text(color = "#e9ecef",family = "irish grover",size = 20,face = "bold"),
+        plot.background = element_rect(fill = "black", color = "black"),
+        plot.title.position = "plot",
+  plot.title = element_textbox_simple(
+      colour = "#e9ecef",
+      hjust = 0,
+      halign = 0,
+      margin = margin(b = 10, t = 0),
+      lineheight = 0.5,
+      face = "bold",
+      size = 50,
+      family = "irish grover"
+    ),
+    plot.subtitle = element_textbox_simple(
+      colour = "#e9ecef",
+      hjust = 0,
+      halign = 0,
+      margin = margin(b = 15, t = 5),
+      lineheight = 0.5,
+      family = "irish grover",
+      size = 20
+    ),
+  plot.caption = element_textbox_simple(
+      colour = "#e9ecef",
+      hjust = 0.5,
+      halign = 0.5,
+      margin = margin(b = 0, t = 10),
+      lineheight = 0.5,
+      family = "irish grover",
+      size = 15
+    ),
+plot.margin = margin(10, 10, 10, 10)) +
+  labs(title = title,
+       subtitle = st,
+       caption = cap)
+```
+
+```{r}
+p1
+```
+

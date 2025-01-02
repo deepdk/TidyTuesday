@@ -1,0 +1,109 @@
+---
+title: "monarchs"
+author: "Deepali Kank"
+date: "`r Sys.Date()`"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(stringr)
+library(showtext)
+library(glue)
+library(ggtext)
+```
+
+```{r}
+df <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-08-20/english_monarchs_marriages_df.csv')
+
+```
+
+
+```{r}
+view(df)
+```
+
+```{r}
+df <- df |>
+  mutate(king_age = str_replace_all(king_age, "[-\\?()]", "")) |> 
+  mutate(king_age = str_replace_all(king_age, "–", "")) |> 
+  mutate(king_age = str_replace_all(king_age, "\\?", "")) |> 
+  mutate(consort_age = str_replace_all(consort_age,"–", "")) |> 
+  mutate(consort_age = str_replace_all(consort_age,"\\?","")) |> 
+  mutate(king_age = as.numeric(king_age)) |> 
+  mutate(consort_age = as.numeric(consort_age)) |> 
+  mutate(year_of_marriage = str_replace_all(year_of_marriage,"[-\\?()]", "")) |> 
+  mutate(year_of_marriage = str_replace_all(year_of_marriage,"–", "")) |> 
+  mutate(year_of_marriage = str_replace_all(year_of_marriage,"\\?", "")) |> 
+  mutate(year_of_marriage = as.numeric(year_of_marriage))
+```
+
+```{r}
+df
+```
+
+
+```{r}
+df <- df |> 
+  filter(!is.na(king_age)) |> 
+  filter(!is.na(consort_age))
+```
+
+```{r}
+
+# Create a unique identifier for each king-consort pair
+df <- df %>%
+  mutate(king_consort = paste(king_name, consort_name, sep = " - "))
+```
+
+
+```{r}
+pal_text <- "black"
+pal_bg<-'white'
+```
+
+```{r}
+font_add_google("Poppins","poppins")
+showtext_auto()
+```
+
+```{r}
+my_subtitle <- glue("The age of <span style=\"color:#048ba8;\">kings</span> and <span style=\"color:#f18f01;\">consorts</span> at the time of marriage")
+```
+
+
+```{r}
+
+# Plot with unique identifiers, reordered by king_age
+p <- ggplot(df, aes(x = reorder(king_consort, king_age))) +
+  # Outer bar (King Age)
+  geom_bar(aes(y = king_age), stat = "identity", fill = "#048ba8", width = 0.6) +
+  # Inner bar (Consort Age)
+  geom_bar(aes(y = consort_age), stat = "identity", fill = "#f18f01", width = 0.25) +
+  coord_flip() +
+  labs(title = "English Monarchs and Marriages",
+       subtitle = my_subtitle,
+       y = "Age", caption = "Datasource: Ian Visits\nGraphic: Deepali Kank")+
+   theme(legend.position = "right",
+        plot.background = element_rect(fill=pal_bg, color=pal_bg),
+        panel.background = element_rect(fill=pal_bg),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        text = element_text(color=pal_text, family = "poppins"),
+        axis.text.x = element_text(color=pal_text, size = 20,family = "poppins"),
+        axis.text.y = element_text(color=pal_text, size = 20,family = "poppins"),
+        axis.ticks = element_blank(),
+        axis.title.y = element_blank(),
+        axis.title.x = element_text(size = 20),
+        plot.title = element_text(size=50,family = "poppins", color = "#1b263b", hjust = -6.5),
+        plot.subtitle = element_markdown(size = 30,family = "poppins",hjust = -5.5),
+        plot.caption = element_markdown(size = 18,family = "poppins"),
+        plot.margin = margin(l=20, r=20, b=10, t=20))  
+```
+
+```{r}
+ggsave(path = "D:/TidyTuesday_2024",filename="p.png", plot=p, width=7, height=10, units="in")
+```
+

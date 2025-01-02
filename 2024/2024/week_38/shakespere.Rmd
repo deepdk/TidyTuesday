@@ -1,0 +1,138 @@
+---
+title: "Shakespeare"
+author: "Deepali Kank"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r,message=FALSE, warning=FALSE}
+library(tidyverse)
+library(scales)
+library(tidytext)
+library(devtools)
+library(ggwordcloud)
+library(png)
+library(svglite)
+```
+
+```{r}
+hamlet <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-09-17/hamlet.csv')
+macbeth <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-09-17/macbeth.csv')
+romeo_juliet <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-09-17/romeo_juliet.csv')
+```
+
+```{r}
+view(hamlet)
+```
+
+```{r}
+view(macbeth)
+```
+
+```{r}
+view(romeo_juliet)
+```
+
+```{r}
+wordcloud2(demoFreq, size = 0.7, shape = 'star')
+```
+
+```{r}
+romeo_juliet <- romeo_juliet |>  
+  filter(character %in% c("Romeo","Juliet")) 
+```
+
+```{r}
+# Create a custom list of words to exclude
+custom_stop_words <- c("thou", "thy", "thee", "thine", "art", "hast", "dost", "ere", "o","hath")
+
+word_counts <- romeo_juliet %>%
+  unnest_tokens(word, dialogue) %>%
+  anti_join(stop_words) %>%  # Remove common stop words
+  filter(!str_detect(word, "^[0-9]+$")) %>%  # Remove numbers
+  filter(!word %in% custom_stop_words) %>%  # Remove custom words
+  count(character, word, sort = TRUE)
+
+```
+
+```{r}
+combined_word_counts <- word_counts %>%
+  group_by(word, character) %>%
+  summarise(n = sum(n)) %>%
+  arrange(desc(n)) 
+combined_word_counts
+```
+
+```{r}
+juliet <- combined_word_counts |> 
+  filter(character == "Juliet")
+```
+
+```{r}
+romeo <- combined_word_counts |> 
+  filter(character == "Romeo")
+```
+
+
+```{r}
+set.seed(42)
+p1_ro <- ggplot(
+  romeo,
+  aes(
+    label = word, size = n,color = n
+  )
+) +
+  geom_text_wordcloud_area(
+    mask = readPNG("D:/TidyTuesday_2024/week_38/heart_image.png"
+    ),
+    rm_outside = TRUE
+  ) +
+  scale_size_area(max_size = 20) +
+  theme_minimal() +
+  scale_color_gradient(low = "#FF69B4", high = "#C41E3A")
+```
+
+
+
+
+```{r}
+width_px = 500
+dpi = 96 
+width_in_inches = width_px / dpi
+svglite("p1_ro.svg", width = width_in_inches)
+print(p1_ro) # Plot output is captured and written to the file
+dev.off()
+```
+
+
+```{r}
+p2_ju <- ggplot(
+  juliet,
+  aes(
+    label = word, size = n,color = n
+  )
+) +
+  geom_text_wordcloud_area(
+    mask = readPNG("D:/TidyTuesday_2024/week_38/heart_image.png"
+    ),
+    rm_outside = TRUE
+  ) +
+  scale_size_area(max_size = 20) +
+  theme_minimal() +
+  scale_color_gradient(low = "#FF69B4", high = "#C41E3A")
+```
+
+
+
+
+```{r}
+width_px = 500
+dpi = 96 
+width_in_inches = width_px / dpi
+svglite("p2_ju.svg", width = width_in_inches)
+print(p2_ju) # Plot output is captured and written to the file
+dev.off()
+```
+
+
+

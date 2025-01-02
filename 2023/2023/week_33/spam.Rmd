@@ -1,0 +1,104 @@
+---
+title: "Spam email"
+author: "Deepali Kank"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r,warning=FALSE, message=FALSE}
+library(tidyverse)
+library(scales)
+library(janitor)
+library(MetBrewer)
+library(lubridate)
+library(kernlab)
+library(showtext)
+library(ggtext)
+library(patchwork)
+```
+
+
+```{r}
+font_add(family = "Roboto", regular = "D:/HP laptop/Fonts/RobotoCondensed-Regular.ttf")
+showtext_auto()
+```
+
+
+```{r}
+view(spam)
+```
+
+```{r}
+data(spam)
+```
+
+```{r}
+glimpse(spam)
+```
+```{r}
+view(spam)
+```
+
+
+```{r}
+colnames(spam)
+```
+
+```{r}
+df <- spam |> 
+  pivot_longer(cols = c(1:54),
+               names_to = "var_type",
+               values_to = "value")
+```
+
+```{r}
+view(df)
+```
+
+
+```{r}
+spam %>% 
+  filter(you != 0) %>% 
+  select(you, type) %>%
+  group_by(type) %>% 
+  summarise(total = n())
+```
+
+```{r,fig.height=13, fig.width=20}
+p1 <- df |> 
+  filter(value != 0) |> 
+  select(var_type,type) |> 
+  group_by(var_type, type) |> 
+  summarise(total = n()) |> 
+  ggplot(aes(var_type,total, fill = type)) +
+  geom_col(color = "black") +
+  ylim(-2000,3000) + 
+  scale_fill_manual(values = c("#d3f3f1","#e9b7ce"))  + 
+  coord_polar() + 
+  theme_light() + 
+theme(panel.background = element_rect(fill="black", color="black")) +
+theme(plot.background  = element_rect(fill="black", color="black")) +
+theme(panel.border     = element_rect(color="black")) + 
+  theme(legend.position = "none") +
+  theme(legend.background = element_rect(fill = "white", color = "white")) +
+  theme(legend.text = element_text(size = 20, face = "bold", color = "#030303")) +
+  theme(legend.justification = "center") +
+  theme(legend.title = element_blank()) +
+  theme(legend.key.size = unit(1, 'cm')) +
+  theme(legend.margin = margin(b = -13)) + 
+  theme(axis.text.x = element_text(size = 25, color = "white", hjust = 0.5, vjust = 0.5,face = "bold", family = 'Roboto')) + 
+  theme(axis.text.y = element_text(size = 25, color = "white", hjust = 0.5, vjust = 0.5,face = "bold", family = 'Roboto'))
+  theme(axis.title.x = element_blank()) + 
+  theme(axis.title.y = element_blank())
+p1
+```
+
+# Added the title and subtitle using Figma.
+
+
+
+
+
+
+
+
