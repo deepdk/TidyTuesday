@@ -1,3 +1,9 @@
+[week 4 - Water Insecurity](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_4)
+
+![Dashboard 1](https://github.com/user-attachments/assets/8c0818c3-0723-4627-a133-3bec014363cd)
+
+---
+
 [Week 3 - Himalayan Mountains](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_3)
 
 ![f1](https://github.com/user-attachments/assets/653c5587-9ae5-42f5-969c-f3a5cc68a3c9)
