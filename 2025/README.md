@@ -1,3 +1,9 @@
+[week 5 - Simpsons](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_5)
+
+![f1](https://github.com/user-attachments/assets/a73ba773-ed5c-48d2-8e05-557584462e93)
+
+---
+
 [week 4 - Water Insecurity](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_4)
 
 ![Dashboard 1](https://github.com/user-attachments/assets/8c0818c3-0723-4627-a133-3bec014363cd)
