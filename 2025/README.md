@@ -1,3 +1,9 @@
+[week 7 - Agenncies from the FBI Crime Data API](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_7)
+
+![Rplot01](https://github.com/user-attachments/assets/f8344d5c-55f2-4800-9971-01ee15345037)
+
+---
+
 [week 5 - Simpsons](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_5)
 
 ![f1](https://github.com/user-attachments/assets/a73ba773-ed5c-48d2-8e05-557584462e93)
