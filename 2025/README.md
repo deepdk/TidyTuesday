@@ -1,3 +1,9 @@
+[week 8 - Academic Literature on Racial and Ethnic Disparities in Reproductive Medicine in the US](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_8)
+
+![f2](https://github.com/user-attachments/assets/c28bddc6-eedc-4871-add3-3f3e58a51fcd)
+
+---
+
 [week 7 - Agenncies from the FBI Crime Data API](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_7)
 
 ![Rplot01](https://github.com/user-attachments/assets/f8344d5c-55f2-4800-9971-01ee15345037)
