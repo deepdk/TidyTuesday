@@ -1,3 +1,9 @@
+[week 9 - Long beach shelter animals](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_9)
+
+![f3](https://github.com/user-attachments/assets/7445abcf-e514-49c0-905f-b7ecdde3d879)
+
+---
+
 [week 8 - Academic Literature on Racial and Ethnic Disparities in Reproductive Medicine in the US](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_8)
 
 ![f2](https://github.com/user-attachments/assets/c28bddc6-eedc-4871-add3-3f3e58a51fcd)
