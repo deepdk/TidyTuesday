@@ -1,3 +1,9 @@
+[week 12 - Text in Amazpn's annual report](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_12)
+
+![Untitled](https://github.com/user-attachments/assets/db0deb61-5e39-4274-b4ba-2e0ad3173007)
+
+---
+
 [week 11 - Palm Trees](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_11)
 
 ![f4](https://github.com/user-attachments/assets/9eff4a72-493e-49eb-8ada-a6e5d4987548)
