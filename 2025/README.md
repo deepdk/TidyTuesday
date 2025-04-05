@@ -1,3 +1,9 @@
+[week 13 - Pokemon](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_13)
+
+![pokf2](https://github.com/user-attachments/assets/cbd2c39a-4e26-4c5e-a441-fd7b13a40ae6)
+
+---
+
 [week 12 - Text in Amazpn's annual report](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_12)
 
 ![Untitled](https://github.com/user-attachments/assets/db0deb61-5e39-4274-b4ba-2e0ad3173007)
