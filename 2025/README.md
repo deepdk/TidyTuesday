@@ -1,3 +1,9 @@
+[week 14 - Timely and effective care by the U.S]
+
+![t2](https://github.com/user-attachments/assets/5e1b0184-3930-4a1b-80d1-314174414ee5)
+
+---
+
 [week 13 - Pokemon](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_13)
 
 <img src="https://github.com/user-attachments/assets/cbd2c39a-4e26-4c5e-a441-fd7b13a40ae6" width="500" height="500">
