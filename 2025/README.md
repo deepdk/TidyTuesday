@@ -1,3 +1,9 @@
+[week 16 - Fatal car accidents in the US](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_16)
+
+![car](https://github.com/user-attachments/assets/da5c0692-bcda-48c1-87dc-e39806e1f30d)
+
+---
+
 [week 15 - Base R Penguins](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_15)
 
 ![Penguins (2)](https://github.com/user-attachments/assets/b53f0784-88aa-4e8d-b81e-de48aaf89a18)
