@@ -1,0 +1,373 @@
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap');
+
+/* Base Styles */
+body {
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  background-color: #f8fafc;
+  margin: 0;
+  padding: 0;
+  color: #334155;
+  line-height: 1.6;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Conference Header Styles */
+.conference-header {
+  text-align: center;
+  padding: 20px 20px;
+  background: linear-gradient(135deg, #eef3f8 0%, #e6f0f9 100%);
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+
+.conference-header h1 {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 3em;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #1e3a8a;
+  letter-spacing: -0.5px;
+}
+
+/* Event Types Section */
+.event-types {
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+  margin: 25px 0;
+  font-size: 1.1em;
+}
+
+.event {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.2s ease;
+}
+
+.event:hover {
+  transform: translateY(-3px);
+}
+
+.icon {
+  font-size: 1.8em;
+  color: #0073e6;
+  margin-bottom: 8px;
+}
+
+.event-date {
+  font-weight: 600;
+  margin-top: 5px;
+  color: #1e293b;
+}
+
+.location, .hosted-by {
+  font-size: 1em;
+  color: #475569;
+  margin-top: 10px;
+}
+
+.hosted-by {
+  margin-top: 5px;
+  font-style: italic;
+}
+
+/* Filter Section */
+.filter-section {
+  padding: 20px 40px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.04);
+  margin: 20px auto;
+  max-width: 90%;
+}
+
+/* Filter Row - Flex layout for inline elements */
+.filter-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: space-between;
+}
+
+/* Session Type Filter */
+.session-type-filter {
+  flex: 0 0 auto;
+  width: 260px;
+}
+
+.session-type-filter .selectize-control {
+  width: 100%;
+}
+
+.session-type-filter label {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #1e293b;
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* Date Picker Row */
+.date-picker-row {
+  flex: 1 1 auto;
+  text-align: right;
+  padding: 10px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+
+.date-button {
+  background-color: #f1f5f9;
+  border: none;
+  margin: 6px;
+  padding: 10px 22px;
+  border-radius: 30px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.date-button:hover {
+  background-color: #e2e8f0;
+  transform: translateY(-2px);
+}
+
+.date-button:active {
+  transform: translateY(0);
+}
+
+.reset-button {
+  background-color: #0073e6;
+  color: white;
+  font-weight: 500;
+}
+
+.reset-button:hover {
+  background-color: #0060c0;
+}
+
+/* Style the select input to match the design */
+.selectize-control.single .selectize-input {
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  padding: 10px 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+}
+
+.selectize-control.single .selectize-input:hover {
+  border-color: #cbd5e1;
+}
+
+.selectize-control.single .selectize-input.focus {
+  border-color: #0073e6;
+  box-shadow: 0 0 0 2px rgba(0,115,230,0.1);
+}
+
+/* Main Content */
+.main-content {
+  padding: 0 40px 40px;
+}
+
+/* Card Gallery */
+.card-gallery {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  padding: 20px 0;
+  margin: 0 auto;
+}
+
+@media (max-width: 1200px) {
+  .card-gallery {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .card-gallery {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Session Cards */
+.session-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  width: 100%;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.session-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 15px rgba(0,0,0,0.08);
+  border-color: #cbd5e1;
+}
+
+.card-title {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 1.2em;
+  margin-bottom: 10px;
+  color: #1e293b;
+  line-height: 1.3;
+}
+
+.card-meta {
+  font-size: 0.9em;
+  color: #64748b;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.card-meta i {
+  margin-right: 5px;
+  color: #0073e6;
+}
+
+.card-tags {
+  margin-bottom: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  display: inline-block;
+  background-color: #f1f5f9;
+  color: #475569;
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.tag:hover {
+  background-color: #e2e8f0;
+}
+
+.view-button {
+  background-color: #0073e6;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+.view-button:hover {
+  background-color: #0060c0;
+  transform: translateY(-2px);
+}
+
+/* Modal customization */
+.modal-content {
+  border-radius: 12px;
+  border: none;
+}
+
+.modal-header {
+  background-color: #f8fafc;
+  border-radius: 12px 12px 0 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-title {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.modal-footer {
+  border-top: 1px solid #e2e8f0;
+}
+
+.modal-footer .btn {
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .filter-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  
+  .session-type-filter {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .date-picker-row {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .card-gallery {
+    grid-template-columns: 1fr;
+    padding: 15px;
+  }
+  
+  .event-types {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .conference-header h1 {
+    font-size: 2.2em;
+  }
+}
+
+/* Additional UI improvements */
+.section-title {
+  font-family: 'Montserrat', sans-serif;
+  text-align: center;
+  font-size: 1.8em;
+  color: #1e293b;
+  margin: 30px 0 15px;
+}
+
+/* Style variations for different session types */
+.session-card.workshop {
+  border-left: 4px solid #3b82f6;
+}
+
+.session-card.talk {
+  border-left: 4px solid #10b981;
+}
+
+.session-card.panel {
+  border-left: 4px solid #f59e0b;
+}
