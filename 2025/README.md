@@ -1,3 +1,9 @@
+[week 17 - useR conference 2025](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_17)
+
+![Screenshot 2025-04-29 120518](https://github.com/user-attachments/assets/dedaab55-8116-420a-a659-f5d7d1673e38)
+
+---
+
 [week 16 - Fatal car accidents in the US](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_16)
 
 ![car](https://github.com/user-attachments/assets/da5c0692-bcda-48c1-87dc-e39806e1f30d)
