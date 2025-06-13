@@ -1,3 +1,9 @@
+[week 23 - U.S Judges](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_23)
+
+![Rplot01](https://github.com/user-attachments/assets/77393efb-b6fd-415b-ad5c-d859a370f081)
+
+---
+
 [week 17 - useR conference 2025](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_17)
 
 ![Screenshot 2025-04-29 120518](https://github.com/user-attachments/assets/dedaab55-8116-420a-a659-f5d7d1673e38)
