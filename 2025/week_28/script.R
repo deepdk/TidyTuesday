@@ -56,8 +56,7 @@ thread_data <- data.frame(
 
 title <- "British Library Funding"
 
-st <-
-  "Annual funding in (£ millions) across three categories from 1998-2023"
+st <- "Annual funding in (£ millions) across three categories from 1998-2023"
 
 
 cap <- "Data: UK Government | Graphic: Deepali Kank"
