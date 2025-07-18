@@ -1,3 +1,9 @@
+[week 28 - British Library Funding](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_28)
+
+<img width="1220" height="986" alt="image" src="https://github.com/user-attachments/assets/8c1d3ff3-77fe-4f18-8bd0-8ab0cf2439dd" />
+
+---
+
 [week 23 - U.S Judges](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_23)
 
 ![Rplot01](https://github.com/user-attachments/assets/77393efb-b6fd-415b-ad5c-d859a370f081)
