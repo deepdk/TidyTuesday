@@ -6,67 +6,67 @@
 
 [week 23 - U.S Judges](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_23)
 
-![Rplot01](https://github.com/user-attachments/assets/77393efb-b6fd-415b-ad5c-d859a370f081)
+<img width="1416" height="1100" alt="image" src="https://github.com/user-attachments/assets/47e9bc0a-44a2-4b7a-b83b-145c7ad4b546" />
 
 ---
 
 [week 17 - useR conference 2025](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_17)
 
-![Screenshot 2025-04-29 120518](https://github.com/user-attachments/assets/dedaab55-8116-420a-a659-f5d7d1673e38)
+<img width="1497" height="1246" alt="image" src="https://github.com/user-attachments/assets/13ac3afe-ea40-4c8c-ae6a-4a88a865723f" />
 
 ---
 
 [week 16 - Fatal car accidents in the US](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_16)
 
-![car](https://github.com/user-attachments/assets/da5c0692-bcda-48c1-87dc-e39806e1f30d)
+<img width="1821" height="1213" alt="image" src="https://github.com/user-attachments/assets/d88fef7c-58dc-4820-b121-7c2316b8edc0" />
 
 ---
 
 [week 15 - Base R Penguins](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_15)
 
-![Penguins (2)](https://github.com/user-attachments/assets/b53f0784-88aa-4e8d-b81e-de48aaf89a18)
+<img width="1280" height="1536" alt="image" src="https://github.com/user-attachments/assets/ceafed43-c522-4af3-8744-bf4b2210579c" />
 
 ---
 
 [week 14 - Timely and effective care by the U.S]
 
-![t2](https://github.com/user-attachments/assets/5e1b0184-3930-4a1b-80d1-314174414ee5)
+<img width="1517" height="1365" alt="image" src="https://github.com/user-attachments/assets/9e3e2b42-1716-45c5-8f7a-30fc52b3bd55" />
 
 ---
 
 [week 13 - Pokemon](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_13)
 
-<img src="https://github.com/user-attachments/assets/cbd2c39a-4e26-4c5e-a441-fd7b13a40ae6" width="500" height="500">
+<img width="2012" height="1536" alt="image" src="https://github.com/user-attachments/assets/5aa5a640-4fd4-4864-999d-f4c57158fb70" />
 
 ---
 
 [week 12 - Text in Amazpn's annual report](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_12)
 
-<img src="https://github.com/user-attachments/assets/db0deb61-5e39-4274-b4ba-2e0ad3173007" width="500" height="500">
+<img width="1516" height="1536" alt="image" src="https://github.com/user-attachments/assets/6ef1cc4e-51bc-4056-950b-733acd77ac94" />
 
 ---
 
 [week 11 - Palm Trees](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_11)
 
-<img src="https://github.com/user-attachments/assets/9eff4a72-493e-49eb-8ada-a6e5d4987548" width="500" height="500">
+<img width="1590" height="1536" alt="image" src="https://github.com/user-attachments/assets/ef3f74f6-307f-4b9a-9f37-022255649811" />
 
 ---
 
 [week 9 - Long beach shelter animals](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_9)
 
-<img src="https://github.com/user-attachments/assets/7445abcf-e514-49c0-905f-b7ecdde3d879" width="500" height="500">
+<img width="1369" height="1536" alt="image" src="https://github.com/user-attachments/assets/c0b01b14-dc64-4581-9280-b2831d68c74a" />
 
 ---
 
 [week 8 - Academic Literature on Racial and Ethnic Disparities in Reproductive Medicine in the US](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_8)
 
-<img src="https://github.com/user-attachments/assets/c28bddc6-eedc-4871-add3-3f3e58a51fcd" width="500" height="500">
+<img width="2048" height="1205" alt="image" src="https://github.com/user-attachments/assets/5fa9b040-5b26-4402-9d39-af26934fe84e" />
 
 ---
 
 [week 7 - Agenncies from the FBI Crime Data API](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_7)
 
-<img src="https://github.com/user-attachments/assets/f8344d5c-55f2-4800-9971-01ee15345037" width="500" height="500">
+<img width="1162" height="935" alt="image" src="https://github.com/user-attachments/assets/18618a9f-1c25-4405-9d84-fe5bb2b61e6c" />
 
 ---
 
@@ -78,18 +78,18 @@
 
 [week 4 - Water Insecurity](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_4)
 
-<img src="https://github.com/user-attachments/assets/8c0818c3-0723-4627-a133-3bec014363cd" width="500" height="500">
+<img width="1821" height="1213" alt="image" src="https://github.com/user-attachments/assets/2ea4e35d-3c21-4e02-a468-1fcfeda444ea" />
 
 ---
 
 [Week 3 - Himalayan Mountains](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_3)
 
-<img src="https://github.com/user-attachments/assets/653c5587-9ae5-42f5-969c-f3a5cc68a3c9" width="500" height="500">
+<img width="1280" height="1972" alt="image" src="https://github.com/user-attachments/assets/fe7268db-135e-43f1-bc65-69cc3e5ca7c6" />
 
 ---
 
 [Week 1 - Bring Your Own Data](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_1)
 
-<img src="https://github.com/user-attachments/assets/d8559ab3-894d-4891-924d-368ef5e67ef3" width="500" height="500">
+<img width="2048" height="1109" alt="image" src="https://github.com/user-attachments/assets/969a2348-9475-40a2-bb4d-dfc01b0b139a" />
 
 ---
