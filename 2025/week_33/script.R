@@ -7,7 +7,7 @@ library(ggtext)
 library(ggpattern)
 
 
-font_add_google("Overpass", "arvo")
+font_add_google("Overpass", "overpass")
 showtext_auto()
 
 
@@ -73,7 +73,8 @@ ggplot(triangles, aes(x = x_poly, y = y_poly, group = id)) +
     inherit.aes = FALSE,
     fontface = "bold",
     size = 5,
-    color = "#f8f9fa"
+    color = "#f8f9fa",
+    family = "overpass"
   ) +
   scale_pattern_fill_manual(values = grad_start) +
   scale_pattern_fill2_manual(values = grad_end) +
@@ -85,7 +86,7 @@ ggplot(triangles, aes(x = x_poly, y = y_poly, group = id)) +
     caption = caption,
     x = NULL, y = NULL
   ) +
-  theme_minimal(base_size = 10, base_family = "arvo") +
+  theme_minimal(base_size = 10, base_family = "overpass") +
   theme(
     axis.title = element_blank(),
     axis.text.y = element_blank(),
