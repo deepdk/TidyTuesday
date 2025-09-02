@@ -1,6 +1,6 @@
 [week 35 - Australian Frogs](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_35)
 
-![Uploading frog.png…]()
+<img width="1345" height="934" alt="frog" src="https://github.com/user-attachments/assets/268f4f15-3a08-46c1-a62b-592e06c3ccac" />
 
 ---
 
