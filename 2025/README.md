@@ -1,3 +1,9 @@
+[week 35 - Australian Frogs](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_35)
+
+![Uploading frog.png…]()
+
+---
+
 [week 33 - Scottish Munros](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_33)
 
 <img width="1233" height="1036" alt="munro" src="https://github.com/user-attachments/assets/f542aeb4-0e09-4729-aa02-1e9d416dc2df" />
