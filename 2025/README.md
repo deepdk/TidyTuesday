@@ -4,6 +4,12 @@
 
 ---
 
+[week 34 - Billboard Hot 100](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_34)
+
+<img width="3200" height="3316" alt="billboard" src="https://github.com/user-attachments/assets/bc77cf1f-1597-4e44-94b8-5b8ff3f31c92" />
+
+---
+
 [week 33 - Scottish Munros](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_33)
 
 <img width="1233" height="1036" alt="munro" src="https://github.com/user-attachments/assets/f542aeb4-0e09-4729-aa02-1e9d416dc2df" />
