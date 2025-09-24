@@ -1,3 +1,9 @@
+[week 37 - Allreceipes.com](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_37)
+
+<img width="1000" height="1000" alt="culinary" src="https://github.com/user-attachments/assets/16cd7372-aeb8-4f56-ada5-6cfac308a085" />
+
+---
+
 [week 36 - Henley Passport Index](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_36)
 
 <img width="1799" height="1199" alt="Henley" src="https://github.com/user-attachments/assets/eb4f3c24-e7a1-4c10-82e4-10c411e875a5" />
