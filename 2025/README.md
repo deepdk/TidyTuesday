@@ -1,3 +1,9 @@
+[week 42 - UK Climate Data](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_42)
+
+<img width="2304" height="5944" alt="chart1" src="https://github.com/user-attachments/assets/70fbd88c-7bba-49b6-85a2-fdc5ce8e6469" />
+
+---
+
 [week 40 - EuroLeague Basketball](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_40)
 
 <img width="3200" height="3200" alt="basketball" src="https://github.com/user-attachments/assets/10793579-a36f-419b-b34c-674172603302" />
