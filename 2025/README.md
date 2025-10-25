@@ -1,3 +1,9 @@
+[week 43 - British Literary Prizes](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_43)
+
+<img width="4016" height="3479" alt="britishfig" src="https://github.com/user-attachments/assets/adfc794b-96f4-4378-a22a-1af333dde4f1" />
+
+---
+
 [week 42 - UK Climate Data](https://github.com/deepdk/TidyTuesday/tree/main/2025/week_42)
 
 <img width="2304" height="5944" alt="chart1" src="https://github.com/user-attachments/assets/70fbd88c-7bba-49b6-85a2-fdc5ce8e6469" />
