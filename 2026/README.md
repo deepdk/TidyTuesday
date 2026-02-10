@@ -1,6 +1,6 @@
 week - 6 [Winter Olymoics](https://github.com/deepdk/TidyTuesday/tree/main/2026/folders/week_6)
 
-<img width="6000" height="4800" alt="tt_2026_w06_radial_small_multiples" src="https://github.com/user-attachments/assets/2eb16882-474c-4e5d-b744-698d8bb76fa1" />
+<img width="4800" height="4800" alt="tt_2026_w06_radial_small_multiples" src="https://github.com/user-attachments/assets/50c68926-fc47-4936-929a-2c3b796da573" />
 
 ---
 
