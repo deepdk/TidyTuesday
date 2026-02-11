@@ -12,10 +12,14 @@ font_add_google("Outfit", "outfit")
 font_add_google("DM Sans", "dm_sans")
 showtext_auto()
 
+source(here::here('R', 'theme_deepali.R'))
+theme_set(theme_deepali())
+
 # Load data ----
 df <- tidytuesdayR::tt_load(2026, week = 6)$schedule
 
-df |> 
+
+df |>
   count(discipline_name, sort = TRUE)
 
 df |>
@@ -192,7 +196,13 @@ n_days <- max(df_radial$day_num)
 
 # Highlight only Ice Hockey
 df_radial <- df_radial %>%
-  mutate(disc_highlight = if_else(discipline_name == "Ice Hockey", "Ice Hockey", "Other"))
+  mutate(
+    disc_highlight = if_else(
+      discipline_name == "Ice Hockey",
+      "Ice Hockey",
+      "Other"
+    )
+  )
 
 disc_palette <- c("Ice Hockey" = "#66FCF1", "Other" = "grey18")
 
@@ -226,7 +236,8 @@ p2 <- ggplot(df_radial) +
   # ) +
   # Day labels at the top — only first and last day
   geom_text(
-    data = day_labels %>% filter(day_num == min(day_num) | day_num == max(day_num)),
+    data = day_labels %>%
+      filter(day_num == min(day_num) | day_num == max(day_num)),
     aes(x = 0.0, y = day_num, label = day_label),
     color = "white",
     size = 7,
@@ -292,7 +303,6 @@ p2 <- ggplot(df_radial) +
   guides(fill = guide_legend(ncol = 1, override.aes = list(alpha = 1)))
 
 
-
 ggsave(
   file.path(plots_dir, "tt_2026_w06_radial_calendar.png"),
   plot = p2,
@@ -329,13 +339,10 @@ df_bg <- df_radial %>%
 # Foreground: only the focal sport's events
 df_fg <- df_facet %>% filter(is_focal)
 
-# Sport-specific colors — a vibrant palette
+# Single highlight color for all sports — icy blue
+highlight_col <- "#4FC3F7"
 sport_colors <- setNames(
-  c("#66FCF1", "#FFD700", "#FF6B6B", "#C084FC", "#4CC9F0",
-    "#F72585", "#80ED99", "#FCA311", "#7B2CBF", "#3A86FF",
-    "#EF476F", "#06D6A0", "#118AB2", "#F4A261", "#E76F51", "#E0AAFF")[
-    seq_along(top_disciplines)
-  ],
+  rep(highlight_col, length(top_disciplines)),
   top_disciplines
 )
 
@@ -347,25 +354,35 @@ day_labels_facet <- df_radial %>%
   crossing(focal = factor(top_disciplines, levels = top_disciplines))
 
 p3 <- ggplot() +
-  # Background: all events in dark grey
+  # Background: all events in muted slate blue
   geom_rect(
     data = df_bg,
-    aes(xmin = start_h, xmax = end_h,
-        ymin = day_num - 0.4, ymax = day_num + 0.4),
-    fill = "grey15"
+    aes(
+      xmin = start_h,
+      xmax = end_h,
+      ymin = day_num - 0.4,
+      ymax = day_num + 0.4
+    ),
+    fill = "#dde6ef"
   ) +
   # Foreground: highlighted sport
   geom_rect(
     data = df_fg,
-    aes(xmin = start_h, xmax = end_h,
-        ymin = day_num - 0.4, ymax = day_num + 0.4,
-        fill = discipline_name)
+    aes(
+      xmin = start_h,
+      xmax = end_h,
+      ymin = day_num - 0.4,
+      ymax = day_num + 0.4,
+      fill = discipline_name
+    )
   ) +
   # Day labels
   geom_text(
     data = day_labels_facet,
     aes(x = 0, y = day_num, label = day_label),
-    color = "grey60", size = 4.5, family = "dm_sans"
+    color = "#5A7A9A",
+    size = 4.5,
+    family = "dm_sans"
   ) +
   coord_polar(start = 0) +
   scale_x_continuous(
@@ -379,35 +396,54 @@ p3 <- ggplot() +
     expand = c(0, 0)
   ) +
   scale_fill_manual(values = sport_colors) +
-  facet_wrap(~ focal, ncol = 4) +
+  facet_wrap(~focal, ncol = 4) +
   labs(
     title = "WHEN EACH SPORT TAKES THE STAGE",
     subtitle = "Radial calendar of Milano Cortina 2026 — each panel highlights one discipline across all days of the Games",
     caption = "Source: TidyTuesday 2026 Week 6 | Viz: Deepali Kank",
     fill = NULL
   ) +
-  theme_deepali(base_size = 30, base_family = "outfit") +
+  theme_minimal(base_size = 30, base_family = "outfit") +
   theme(
-    axis.text.x = element_text(size = 20, colour = "grey50", family = "dm_sans"),
+    plot.background = element_rect(fill = "#E8F0F8", colour = NA),
+    panel.background = element_rect(fill = "#E8F0F8", colour = NA),
+    axis.text.x = element_text(
+      size = 20,
+      colour = "#5A7A9A",
+      family = "dm_sans"
+    ),
     axis.text.y = element_blank(),
     axis.title = element_blank(),
-    panel.grid.major = element_line(colour = "grey12", linewidth = 0.15),
+    panel.grid.major = element_line(colour = "#C8D8E8", linewidth = 0.15),
     panel.grid.minor = element_blank(),
     strip.text = element_text(
-      family = "outfit", face = "bold", size = 32,
-      colour = "white", margin = margin(b = 5, t = 5)
+      family = "outfit",
+      face = "bold",
+      size = 40,
+      colour = "#1B3A5C",
+      margin = margin(b = 5, t = 5)
     ),
     plot.title = element_text(
-      family = "outfit", face = "bold", size = 64,
-      hjust = 0.5, margin = margin(b = 10)
+      family = "outfit",
+      face = "bold",
+      size = 80,
+      colour = "#1B3A5C",
+      hjust = 0.5,
+      margin = margin(b = 10)
     ),
     plot.subtitle = element_text(
-      family = "dm_sans", size = 30, colour = "grey70",
-      hjust = 0.5, margin = margin(b = 25)
+      family = "dm_sans",
+      size = 50,
+      colour = "#4A6A8A",
+      hjust = 0.5,
+      margin = margin(b = 25)
     ),
     plot.caption = element_text(
-      family = "dm_sans", size = 22, colour = "grey50",
-      hjust = 0.5, margin = margin(t = 20)
+      family = "dm_sans",
+      size = 22,
+      colour = "#7A9AB0",
+      hjust = 0.5,
+      margin = margin(t = 20)
     ),
     legend.position = "none",
     panel.spacing = unit(0.5, "lines"),
@@ -419,8 +455,8 @@ p3
 ggsave(
   file.path(plots_dir, "tt_2026_w06_radial_small_multiples.png"),
   plot = p3,
-  width = 20,
+  width = 16,
   height = 16,
   dpi = 300,
-  bg = "#0b0c10"
+  bg = "#E8F0F8"
 )
