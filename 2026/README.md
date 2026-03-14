@@ -1,3 +1,7 @@
+week - 10[How likely is 'likely'?](https://github.com/deepdk/TidyTuesday/tree/main/2026/folders/week_10)
+
+
+
 week - 7 [Agricultural Production Statistics in New Zealand](https://github.com/deepdk/TidyTuesday/tree/main/2026/folders/week_7)
 
 <img width="785" height="2276" alt="tt_2026_w07_fruit_table_react" src="https://github.com/user-attachments/assets/18494c19-10ef-4c26-bc9a-ebb66365186f" />
