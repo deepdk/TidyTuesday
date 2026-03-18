@@ -1,6 +1,12 @@
+week - 11[Salmonid Mortality Data](https://github.com/deepdk/TidyTuesday/tree/main/2026/folders/week_11)
+
+<img width="1316" height="1027" alt="salmon" src="https://github.com/user-attachments/assets/e195be2d-7238-4a60-be66-da63607d9178" />
+
+---
+
 week - 10[How likely is 'likely'?](https://github.com/deepdk/TidyTuesday/tree/main/2026/folders/week_10)
 
-
+---
 
 week - 7 [Agricultural Production Statistics in New Zealand](https://github.com/deepdk/TidyTuesday/tree/main/2026/folders/week_7)
 
