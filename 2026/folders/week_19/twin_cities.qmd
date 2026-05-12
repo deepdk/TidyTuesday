@@ -1,0 +1,524 @@
+---
+title: "TidyTuesday 2026 Week 19: Twinned Cities"
+subtitle: "City-to-city links across countries and continents"
+format:
+  html:
+    page-layout: full
+    toc: false
+    embed-resources: true
+execute:
+  warning: false
+  message: false
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r}
+#| label: prepare-sankey-data
+#| include: false
+data_url <- "https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2026/2026-05-12"
+data_processed_dir <- here::here("data", "processed", "2026")
+
+fs::dir_create(data_processed_dir)
+
+cities <- readr::read_csv(
+  stringr::str_c(data_url, "/cities.csv"),
+  show_col_types = FALSE
+) |>
+  janitor::clean_names()
+
+links <- readr::read_csv(
+  stringr::str_c(data_url, "/links.csv"),
+  show_col_types = FALSE
+) |>
+  janitor::clean_names()
+
+city_lookup <- cities |>
+  dplyr::distinct(id, .keep_all = TRUE)
+
+source_cities <- city_lookup |>
+  dplyr::transmute(
+    source = id,
+    source_name = name,
+    source_country = country,
+    source_continent = continent
+  )
+
+target_cities <- city_lookup |>
+  dplyr::transmute(
+    target = id,
+    target_name = name,
+    target_country = country,
+    target_continent = continent
+  )
+
+link_locations <- links |>
+  dplyr::inner_join(
+    source_cities,
+    by = dplyr::join_by(source),
+    relationship = "many-to-one"
+  ) |>
+  dplyr::inner_join(
+    target_cities,
+    by = dplyr::join_by(target),
+    relationship = "many-to-one"
+  ) |>
+  dplyr::filter(
+    !is.na(source_name),
+    !is.na(target_name),
+    !is.na(source_country),
+    !is.na(target_country)
+  )
+
+india_links <- link_locations |>
+  dplyr::filter(source_country == "India" | target_country == "India")
+
+india_sankey_links <- india_links |>
+  dplyr::transmute(
+    india_city = dplyr::if_else(source_country == "India", source_name, target_name),
+    linked_country = dplyr::if_else(source_country == "India", target_country, source_country),
+    linked_city = dplyr::if_else(source_country == "India", target_name, source_name),
+    linked_continent = dplyr::if_else(source_country == "India", target_continent, source_continent)
+  ) |>
+  dplyr::count(
+    india_city,
+    linked_country,
+    linked_city,
+    linked_continent,
+    name = "link_count",
+    sort = TRUE
+  )
+
+readr::write_csv(
+  india_sankey_links,
+  fs::path(data_processed_dir, "tt_2026_w19_india_sankey_links.csv")
+)
+```
+
+```{=html}
+<style>
+  @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
+
+  .india-sankey-wrap {
+    font-family: "Manrope", sans-serif;
+    margin: 1.5rem auto 2.5rem;
+    max-width: 1360px;
+    padding: 0 1rem;
+  }
+
+  .india-sankey-sidebar {
+    padding: clamp(2.1rem, 3vw, 3rem) 1.15rem 2rem 0;
+  }
+
+  .india-sankey-title {
+    margin: 0;
+    color: #11171c;
+    font-family: "Manrope", sans-serif;
+    font-size: clamp(2.25rem, 3.15vw, 3.65rem);
+    line-height: 1.02;
+    font-weight: 800;
+    letter-spacing: 0;
+  }
+
+  .india-sankey-selected-city {
+    margin: 1.55rem 0 0.65rem;
+    color: #e75480;
+    font-size: clamp(1.55rem, 2.15vw, 2.05rem);
+    line-height: 1.05;
+    font-weight: 700;
+  }
+
+  .india-sankey-selected-city.is-muted {
+    color: #52616b;
+  }
+
+  .india-sankey-subtitle {
+    max-width: 31ch;
+    margin: 0;
+    color: #11171c;
+    font-size: 0.96rem;
+    line-height: 1.32;
+  }
+
+  .india-sankey-panel {
+    display: grid;
+    grid-template-columns: minmax(215px, 0.25fr) minmax(0, 1fr);
+    gap: 1.1rem;
+    align-items: start;
+    border: 1px solid #dce3e8;
+    border-radius: 8px;
+    background: #f8fafb;
+    overflow: hidden;
+    padding: 0 1rem 0.75rem 1.55rem;
+  }
+
+  .india-sankey-chart {
+    min-width: 0;
+  }
+
+  .india-sankey-chart svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .india-sankey-node rect {
+    shape-rendering: crispEdges;
+  }
+
+  .india-sankey-node text {
+    fill: #11171c;
+    font-family: "Manrope", sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    pointer-events: none;
+  }
+
+  .india-sankey-link {
+    fill: none;
+    mix-blend-mode: multiply;
+    transition: opacity 140ms ease;
+  }
+
+  .india-sankey-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.1rem;
+    margin: 1.25rem 0 0;
+    color: #52616b;
+    font-size: 0.86rem;
+  }
+
+  .india-sankey-meta strong {
+    color: #11171c;
+  }
+
+  @media (max-width: 880px) {
+    .india-sankey-panel {
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+      padding: 1.25rem;
+    }
+
+    .india-sankey-sidebar {
+      padding-top: 0;
+    }
+  }
+
+</style>
+```
+
+```{ojs}
+//| echo: false
+
+indiaSankeyRaw = FileAttachment("../../data/processed/2026/tt_2026_w19_india_sankey_links.csv").csv({typed: true})
+
+indiaSankeyRows = indiaSankeyRaw
+  .map(d => ({
+    india_city: d.india_city,
+    linked_country: d.linked_country,
+    linked_city: d.linked_city,
+    linked_continent: d.linked_continent,
+    link_count: +d.link_count
+  }))
+  .filter(d =>
+    d.india_city &&
+    d.linked_country &&
+    d.linked_city &&
+    Number.isFinite(d.link_count) &&
+    d.link_count > 0
+  )
+
+indiaCityChoices = [
+  "All Indian cities",
+  ...Array.from(new Set(indiaSankeyRows.map(d => d.india_city))).sort(d3.ascending)
+]
+
+sankeyHighlightPink = "#e75480"
+sankeyLinkGray = "#b8c1c8"
+sankeyNodeGray = "#9aa6ad"
+```
+
+```{ojs}
+//| echo: false
+
+viewof selectedIndiaCity = Inputs.select(
+  indiaCityChoices,
+  {
+    label: "Indian city",
+    value: "All Indian cities"
+  }
+)
+```
+
+```{ojs}
+//| echo: false
+
+selectedIndiaSankeyRows = selectedIndiaCity === "All Indian cities"
+  ? []
+  : indiaSankeyRows.filter(d => d.india_city === selectedIndiaCity)
+```
+
+```{ojs}
+//| echo: false
+
+d3Sankey = require("d3-sankey@0.12.3")
+```
+
+```{ojs}
+//| echo: false
+
+{
+  const margin = {top: 34, right: 270, bottom: 12, left: 180};
+  const width = 1180;
+  const sankeyRows = indiaSankeyRows;
+  const highlightedCity = selectedIndiaCity === "All Indian cities" ? null : selectedIndiaCity;
+  const highlightedNodeIds = new Set();
+  const height = Math.max(860, Math.min(1460, 430 + sankeyRows.length * 9.5));
+  const innerWidth = width - margin.left - margin.right;
+  const innerHeight = height - margin.top - margin.bottom;
+
+  const cityTotals = d3.rollup(
+    sankeyRows,
+    values => d3.sum(values, d => d.link_count),
+    d => d.india_city
+  );
+
+  const countryTotals = d3.rollup(
+    sankeyRows,
+    values => d3.sum(values, d => d.link_count),
+    d => d.linked_country
+  );
+
+  const nodesById = new Map();
+  const addNode = node => {
+    if (!nodesById.has(node.id)) nodesById.set(node.id, node);
+  };
+
+  for (const row of sankeyRows) {
+    if (row.india_city === highlightedCity) {
+      highlightedNodeIds.add(`india:${row.india_city}`);
+      highlightedNodeIds.add(`country:${row.linked_country}`);
+      highlightedNodeIds.add(`linked:${row.linked_city}|${row.linked_country}`);
+    }
+
+    addNode({
+      id: `india:${row.india_city}`,
+      name: row.india_city,
+      stage: "Indian city",
+      kind: "india",
+      colorKey: row.india_city,
+      sortValue: cityTotals.get(row.india_city) ?? 0
+    });
+    addNode({
+      id: `country:${row.linked_country}`,
+      name: row.linked_country,
+      stage: "Linked country",
+      kind: "country",
+      continent: row.linked_continent,
+      sortValue: countryTotals.get(row.linked_country) ?? 0
+    });
+    addNode({
+      id: `linked:${row.linked_city}|${row.linked_country}`,
+      name: row.linked_city,
+      stage: "Linked city",
+      kind: "linked",
+      country: row.linked_country,
+      continent: row.linked_continent,
+      sortValue: row.link_count
+    });
+  }
+
+  const cityCountryLinks = Array.from(
+    d3.rollup(
+      sankeyRows,
+      values => ({
+        value: d3.sum(values, d => d.link_count),
+        continent: values[0].linked_continent,
+        targetName: values[0].linked_country
+      }),
+      d => d.india_city,
+      d => d.linked_country
+    ),
+    ([city, countries]) => Array.from(countries, ([country, details]) => ({
+      source: `india:${city}`,
+      target: `country:${country}`,
+      sourceName: city,
+      targetName: details.targetName,
+      value: details.value,
+      continent: details.continent,
+      colorKey: city
+    }))
+  ).flat();
+
+  const countryCityLinks = sankeyRows.map(row => ({
+    source: `country:${row.linked_country}`,
+    target: `linked:${row.linked_city}|${row.linked_country}`,
+    sourceName: row.linked_country,
+    targetName: row.linked_city,
+    value: row.link_count,
+    continent: row.linked_continent,
+    colorKey: row.india_city
+  }));
+
+  const graph = {
+    nodes: Array.from(nodesById.values()).map(d => ({...d})),
+    links: [...cityCountryLinks, ...countryCityLinks].map(d => ({...d}))
+  };
+
+  const sankey = d3Sankey.sankey()
+    .nodeId(d => d.id)
+    .nodeWidth(14)
+    .nodePadding(5)
+    .nodeAlign(d3Sankey.sankeyJustify)
+    .nodeSort((a, b) =>
+      d3.descending(a.sortValue, b.sortValue) ||
+      d3.ascending(a.name, b.name)
+    )
+    .extent([[margin.left, margin.top], [margin.left + innerWidth, margin.top + innerHeight]]);
+
+  sankey(graph);
+
+  const activeLink = d => highlightedCity !== null && d.colorKey === highlightedCity;
+  const activeNode = d => highlightedNodeIds.has(d.id);
+  const baseLinkOpacity = highlightedCity === null ? 0.3 : 0.12;
+  const activeLinkOpacity = 0.82;
+
+  const totalLinks = d3.sum(selectedIndiaSankeyRows, d => d.link_count) || d3.sum(sankeyRows, d => d.link_count);
+  const indianCityCount = new Set(selectedIndiaSankeyRows.map(d => d.india_city)).size || new Set(sankeyRows.map(d => d.india_city)).size;
+  const linkedCountryCount = new Set(selectedIndiaSankeyRows.map(d => d.linked_country)).size || new Set(sankeyRows.map(d => d.linked_country)).size;
+  const linkedCityCount = new Set(selectedIndiaSankeyRows.map(d => `${d.linked_city}|${d.linked_country}`)).size || new Set(sankeyRows.map(d => `${d.linked_city}|${d.linked_country}`)).size;
+  const cityLabel = highlightedCity ?? "Select a city";
+  const cityClass = highlightedCity === null
+    ? "india-sankey-selected-city is-muted"
+    : "india-sankey-selected-city";
+  const formatList = values => values.length > 1
+    ? `${values.slice(0, -1).join(", ")} and ${values[values.length - 1]}`
+    : values[0];
+  const topOverallCities = Array.from(cityTotals, ([city, value]) => ({city, value}))
+    .sort((a, b) => d3.descending(a.value, b.value))
+    .slice(0, 3)
+    .map(d => d.city);
+  const topOverallCountries = Array.from(countryTotals, ([country, value]) => ({country, value}))
+    .sort((a, b) => d3.descending(a.value, b.value))
+    .slice(0, 3)
+    .map(d => d.country);
+  const selectedCountryTotals = d3.rollup(
+    selectedIndiaSankeyRows,
+    values => d3.sum(values, d => d.link_count),
+    d => d.linked_country
+  );
+  const topSelectedCountries = Array.from(selectedCountryTotals, ([country, value]) => ({country, value}))
+    .sort((a, b) => d3.descending(a.value, b.value))
+    .slice(0, 3)
+    .map(d => d.country);
+  const sidebarText = highlightedCity === null
+    ? `${formatList(topOverallCities)} anchor the densest Indian sister-city network, with links concentrating through ${formatList(topOverallCountries)} before spreading to linked cities abroad.`
+    : `${highlightedCity}'s sister-city ties lean most toward ${formatList(topSelectedCountries)}.`;
+
+  const wrapper = html`<section class="india-sankey-wrap">
+    <div class="india-sankey-panel">
+      <div class="india-sankey-sidebar">
+        <h2 class="india-sankey-title">India's<br>Twin City Ties</h2>
+        <div class="${cityClass}">${cityLabel}</div>
+        <p class="india-sankey-subtitle">${sidebarText}</p>
+        <div class="india-sankey-meta">
+          <span><strong>${d3.format(",")(totalLinks)}</strong> links</span>
+          <span><strong>${d3.format(",")(indianCityCount)}</strong> Indian cities</span>
+          <span><strong>${d3.format(",")(linkedCountryCount)}</strong> linked countries</span>
+          <span><strong>${d3.format(",")(linkedCityCount)}</strong> linked cities</span>
+        </div>
+      </div>
+      <div class="india-sankey-chart"></div>
+    </div>
+  </section>`;
+
+  const panel = wrapper.querySelector(".india-sankey-chart");
+  const svg = d3.create("svg")
+    .attr("viewBox", [0, 0, width, height])
+    .attr("role", "img")
+    .attr("aria-label", "Interactive Sankey diagram of Indian twin-city links");
+
+  svg.append("g")
+    .attr("font-family", "Manrope, sans-serif")
+    .attr("font-size", 12)
+    .selectAll("text")
+    .data([
+      {label: "Indian city", x: margin.left, anchor: "start"},
+      {label: "Linked country", x: margin.left + innerWidth / 2, anchor: "middle"},
+      {label: "Linked city", x: margin.left + innerWidth, anchor: "end"}
+    ])
+    .join("text")
+    .attr("x", d => d.x)
+    .attr("y", 16)
+    .attr("text-anchor", d => d.anchor)
+    .attr("fill", "#52616b")
+    .attr("font-weight", 800)
+    .attr("letter-spacing", 0.8)
+    .attr("text-transform", "uppercase")
+    .text(d => d.label);
+
+  const link = svg.append("g")
+    .attr("fill", "none")
+    .selectAll("path")
+    .data(graph.links)
+    .join("path")
+    .attr("class", "india-sankey-link")
+    .attr("d", d3Sankey.sankeyLinkHorizontal())
+    .attr("stroke", d => activeLink(d) ? sankeyHighlightPink : sankeyLinkGray)
+    .attr("stroke-opacity", d => activeLink(d) ? activeLinkOpacity : baseLinkOpacity)
+    .attr("stroke-width", d => Math.max(1, d.width));
+
+  link.append("title")
+    .text(d => `${d.sourceName} -> ${d.targetName}: ${d.value} ${d.value === 1 ? "link" : "links"}`);
+
+  link
+    .on("mouseenter", function() {
+      link.attr("stroke-opacity", d => activeLink(d) ? 0.42 : 0.08);
+      d3.select(this).attr("stroke-opacity", 0.78);
+    })
+    .on("mouseleave", () => link.attr("stroke-opacity", d => activeLink(d) ? activeLinkOpacity : baseLinkOpacity));
+
+  const node = svg.append("g")
+    .selectAll("g")
+    .data(graph.nodes)
+    .join("g")
+    .attr("class", "india-sankey-node");
+
+  node.append("rect")
+    .attr("x", d => d.x0)
+    .attr("y", d => d.y0)
+    .attr("height", d => Math.max(1, d.y1 - d.y0))
+    .attr("width", d => d.x1 - d.x0)
+    .attr("rx", 2)
+    .attr("fill", d => activeNode(d) ? sankeyHighlightPink : sankeyNodeGray)
+    .attr("fill-opacity", d => highlightedCity === null || activeNode(d) ? 0.95 : 0.42)
+    .attr("stroke", "#11171c")
+    .attr("stroke-opacity", d => activeNode(d) ? 0.68 : 0.18);
+
+  node.append("title")
+    .text(d => {
+      const suffix = d.kind === "linked" ? `, ${d.country}` : "";
+      return `${d.name}${suffix}: ${d.value} ${d.value === 1 ? "link" : "links"}`;
+    });
+
+  node.append("text")
+    .attr("x", d => {
+      if (d.kind === "india") return d.x0 - 8;
+      if (d.kind === "linked") return d.x1 + 8;
+      return d.x1 + 8;
+    })
+    .attr("y", d => (d.y0 + d.y1) / 2)
+    .attr("dy", "0.35em")
+    .attr("text-anchor", d => d.kind === "india" ? "end" : "start")
+    .text(d => d.name)
+    .clone(true).lower()
+    .attr("stroke", "#f8fafb")
+    .attr("stroke-width", 4)
+    .attr("stroke-linejoin", "round");
+
+  panel.append(svg.node());
+
+  return wrapper;
+}
+```
