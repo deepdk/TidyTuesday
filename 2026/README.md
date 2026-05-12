@@ -1,3 +1,9 @@
+week - 19[Twin Cities](https://github.com/deepdk/TidyTuesday/tree/main/2026/folders/week_19)
+
+<img width="1314" height="1213" alt="image" src="https://github.com/user-attachments/assets/883d0671-684b-4e0a-8105-69fc2c6e9398" />
+
+---
+
 week -15[Bird Sightings](https://github.com/deepdk/TidyTuesday/tree/main/2026/folders/week_15)
 
 <img width="1253" height="720" alt="image" src="https://github.com/user-attachments/assets/41d9c384-afdb-4294-be22-7cbd4a3ec81a" />
