@@ -1,3 +1,9 @@
+week - 21 [sustainable energy](https://github.com/deepdk/TidyTuesday/tree/main/2026/folders/week_21)
+
+https://github.com/user-attachments/assets/7a7585db-9fab-45a0-92f8-167d18955cc0
+
+---
+
 week - 19[Twin Cities](https://github.com/deepdk/TidyTuesday/tree/main/2026/folders/week_19)
 
 <img width="1314" height="1213" alt="image" src="https://github.com/user-attachments/assets/883d0671-684b-4e0a-8105-69fc2c6e9398" />
