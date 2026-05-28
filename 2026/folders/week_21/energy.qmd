@@ -1,0 +1,687 @@
+---
+pagetitle: "The world looks different with the lights on"
+format:
+  html:
+    page-layout: full
+    toc: false
+    embed-resources: true
+execute:
+  echo: false
+  warning: false
+  message: false
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(tidyverse)
+library(janitor)
+library(here)
+library(fs)
+library(scales)
+library(countrycode)
+
+title_font <- "Cabin"
+body_font <- "DM Sans"
+
+```
+
+```{=html}
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Cabin:ital,wght@0,400..700;1,400..700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap");
+
+:root {
+  --energy-glow-rgb: 255, 209, 102;
+  --energy-page-glow: 0.1;
+}
+
+body {
+  font-family: "DM Sans", system-ui, sans-serif;
+  background:
+    radial-gradient(
+      circle at 72% 18%,
+      rgba(var(--energy-glow-rgb), calc(var(--energy-page-glow) + 0.08)),
+      transparent 38%
+    )
+    fixed,
+    linear-gradient(135deg, #05070a 0%, #0a1014 58%, #07090d 100%)
+    fixed,
+    #05070a;
+  color: #f5f2e8;
+  transition: background 420ms ease;
+}
+
+html {
+  background:
+    radial-gradient(
+      circle at 72% 18%,
+      rgba(var(--energy-glow-rgb), calc(var(--energy-page-glow) + 0.08)),
+      transparent 38%
+    )
+    fixed,
+    linear-gradient(135deg, #05070a 0%, #0a1014 58%, #07090d 100%)
+    fixed,
+    #05070a;
+}
+
+html,
+body {
+  overflow-x: clip;
+}
+
+#quarto-content,
+main,
+.page-columns,
+.content,
+.column-page,
+.column-body {
+  background: transparent;
+  max-width: none;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+h1,
+h2,
+h3,
+.title {
+  font-family: "Cabin", system-ui, sans-serif;
+  letter-spacing: 0;
+}
+</style>
+```
+
+```{r}
+#| label: load-data
+#| include: false
+data_url <- "https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2026/2026-05-26"
+
+energy <- readr::read_csv(
+  stringr::str_c(data_url, "/energy_cleaned.csv"),
+  show_col_types = FALSE
+) |>
+  janitor::clean_names()
+
+latest_year <- max(energy$yr, na.rm = TRUE)
+```
+
+
+```{r}
+#| label: prepare-energy-lamp-data
+#| include: false
+energy_lamp_data <- energy |>
+  dplyr::filter(yr == latest_year) |>
+  dplyr::transmute(
+    country_name,
+    country_code,
+    year = yr,
+    access_electricity_pct = access_electricity_total_pop_pct,
+    rural_access_pct = access_electricity_rural_pop_pct,
+    urban_access_pct = access_electricity_urban_pop_pct,
+    renewable_electricity_pct = perc_renewable_of_total_electricity_output,
+    renewable_consumption_pct = renewable_energy_consumption_tfec_pct,
+    transmission_losses_pct = transmission_and_distribution_losses_pct,
+    electricity_output_gwh = total_electricity_output_gigawatt_hours
+  ) |>
+  dplyr::filter(!is.na(access_electricity_pct)) |>
+  dplyr::mutate(
+    dplyr::across(
+      where(is.numeric) & !year,
+      \(value) round(value, 3)
+    )
+  ) |>
+  dplyr::arrange(access_electricity_pct, country_name)
+
+readr::write_csv(
+  energy_lamp_data,
+  fs::path(data_processed_dir, "tt_2026_w21_energy_lamp.csv")
+)
+
+energy_lamp_summary <- energy_lamp_data |>
+  dplyr::summarise(
+    countries = dplyr::n(),
+    median_access_pct = median(access_electricity_pct, na.rm = TRUE),
+    countries_below_half_access = sum(access_electricity_pct < 50, na.rm = TRUE),
+    countries_at_universal_access = sum(access_electricity_pct >= 99.5, na.rm = TRUE)
+  )
+
+lowest_access_country <- energy_lamp_data |>
+  dplyr::slice_min(access_electricity_pct, n = 1, with_ties = FALSE)
+```
+
+::: {.energy-scene}
+
+```{=html}
+<style>
+.energy-scene {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: clamp(1.2rem, 4vw, 3rem)
+    clamp(1.2rem, 4vw, 3rem);
+  background: transparent;
+  color: #f5f2e8;
+  overflow-x: clip;
+}
+
+.energy-scene-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  max-width: 1040px;
+  min-height: calc(100vh - clamp(2.4rem, 8vw, 6rem));
+  margin: 0 auto;
+}
+
+.energy-scene .observablehq {
+  max-width: 100%;
+  margin: 0;
+  color: #d9e3db;
+  overflow-x: clip;
+}
+
+.energy-scene .observablehq form,
+.energy-scene .observablehq > div {
+  color: #d9e3db;
+}
+
+.energy-scene .observablehq form {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  width: min(520px, 100%);
+  margin: 0 0 clamp(1rem, 2vw, 1.4rem) 0;
+}
+
+.energy-scene .observablehq form label {
+  display: flex !important;
+  align-items: center;
+  gap: 0.8rem;
+  white-space: nowrap;
+}
+
+.energy-scene select {
+  flex: 1 1 260px;
+  min-width: min(260px, 100%);
+  color: #f5f2e8;
+  background: #0d1217;
+  border: 1px solid #46515d;
+  border-radius: 4px;
+  padding: 0.2rem 0.35rem;
+}
+
+.energy-viz-column {
+  min-width: 0;
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+@media (max-width: 1080px) {
+  .energy-scene-grid {
+    grid-template-columns: 1fr;
+    align-items: start;
+    min-height: auto;
+  }
+}
+</style>
+```
+
+::: {.energy-scene-grid}
+
+::: {.energy-viz-column}
+
+
+```{=html}
+<style>
+.energy-lamp-wrap {
+  max-width: 100%;
+  min-width: 0;
+  margin: 0;
+  overflow-x: clip;
+}
+
+.energy-chart-header {
+  max-width: 920px;
+  margin: 0 auto clamp(1rem, 2vw, 1.6rem) auto;
+}
+
+.energy-chart-title {
+  margin: 0 0 0.35rem 0;
+  font-family: "Cabin", system-ui, sans-serif;
+  font-size: clamp(2.25rem, 2vw, 4.45rem);
+  line-height: 1.05;
+  color: #f6f1e7;
+}
+
+.energy-chart-subtitle {
+  max-width: 70ch;
+  margin: 0;
+  font-size: clamp(1rem, 1.25vw, 1.18rem);
+  line-height: 1.38;
+  color: #cbd6cf;
+}
+
+.energy-lamp-wrap label {
+  font-weight: 700;
+}
+
+.energy-lamp-card {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(1.5rem, 2.8vw, 2.4rem);
+  align-items: start;
+  max-width: 100%;
+  min-width: 0;
+  min-height: auto;
+  margin-top: 1rem;
+  padding: clamp(1rem, 2vw, 1.5rem) 0;
+  background: transparent;
+  color: #f5f2e8;
+  overflow: visible;
+}
+
+.energy-lamp-card svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+  transform: translateY(-1.1rem);
+}
+
+.energy-lamp-copy {
+  display: grid;
+  gap: clamp(1.05rem, 1.8vw, 1.45rem);
+  align-content: start;
+  min-width: 0;
+  padding-top: clamp(0.35rem, 0.8vw, 0.75rem);
+}
+
+.energy-lamp-country {
+  margin: 0;
+  font-family: "Cabin", system-ui, sans-serif;
+  font-size: clamp(2rem, 2.9vw, 3.25rem);
+  line-height: 1;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+.energy-lamp-reading {
+  margin: 0;
+  font-size: clamp(1.15rem, 1.55vw, 1.45rem);
+  line-height: 1.35;
+  color: #d9e3db;
+}
+
+.energy-lamp-kpis {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.15rem;
+  min-width: 0;
+}
+
+.energy-lamp-kpi {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.energy-lamp-kpi strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: clamp(1.35rem, 1.75vw, 1.7rem);
+  color: #fff3a1;
+  overflow-wrap: anywhere;
+}
+
+.energy-lamp-kpi span {
+  display: block;
+  color: #aeb8b4;
+  font-size: clamp(0.95rem, 1.1vw, 1.08rem);
+  line-height: 1.28;
+}
+
+@media (max-width: 760px) {
+  .energy-lamp-card {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .energy-lamp-kpis {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+```
+
+```{=html}
+<div class="energy-chart-header">
+  <h1 class="energy-chart-title">When the Lights Come On, Life Opens Up</h1>
+  <p class="energy-chart-subtitle">
+    Electricity access is more than a percentage. It shapes how people study, work, heal, cook, connect, and feel safe after dark. Select a country to see how access changes the brightness of the bulb, while renewable electricity shapes the color of the glow.
+  </p>
+</div>
+```
+
+```{ojs}
+energyLampRowsRaw = FileAttachment("../../data/processed/2026/tt_2026_w21_energy_lamp.csv").csv({typed: true})
+```
+
+```{ojs}
+energyLampRows = energyLampRowsRaw.map(d => ({
+  country_name: d.country_name,
+  country_code: d.country_code,
+  year: d.year,
+  access_electricity_pct: Number.isFinite(d.access_electricity_pct) ? d.access_electricity_pct : null,
+  rural_access_pct: Number.isFinite(d.rural_access_pct) ? d.rural_access_pct : null,
+  urban_access_pct: Number.isFinite(d.urban_access_pct) ? d.urban_access_pct : null,
+  renewable_electricity_pct: Number.isFinite(d.renewable_electricity_pct) ? d.renewable_electricity_pct : null,
+  renewable_consumption_pct: Number.isFinite(d.renewable_consumption_pct) ? d.renewable_consumption_pct : null,
+  transmission_losses_pct: Number.isFinite(d.transmission_losses_pct) ? d.transmission_losses_pct : null,
+  electricity_output_gwh: Number.isFinite(d.electricity_output_gwh) ? d.electricity_output_gwh : null
+}))
+```
+
+```{ojs}
+countryOptions = energyLampRows.map(d => d.country_name).sort(d3.ascending)
+```
+
+```{ojs}
+defaultCountry = countryOptions.includes("South Sudan") ? "South Sudan" : countryOptions[0]
+```
+
+```{ojs}
+viewof selectedCountry = Inputs.select(countryOptions, {
+  label: "Select a country",
+  value: defaultCountry
+})
+```
+
+```{ojs}
+selectedEnergy = energyLampRows.find(d => d.country_name === selectedCountry)
+```
+
+```{ojs}
+pageGlow = {
+  const access = Math.max(0, Math.min(100, selectedEnergy.access_electricity_pct ?? 0));
+  const renewable = selectedEnergy.renewable_electricity_pct == null
+    ? null
+    : Math.max(0, Math.min(100, selectedEnergy.renewable_electricity_pct));
+  const renewableGlow = renewable == null ? 0.25 : renewable / 100;
+  const glow = d3.color(d3.interpolateRgb("#ffd166", "#2dc66d")(renewableGlow));
+  const strength = 0.05 + (access / 100) * 0.34;
+
+  document.documentElement.style.setProperty(
+    "--energy-glow-rgb",
+    `${glow.r}, ${glow.g}, ${glow.b}`
+  );
+  document.documentElement.style.setProperty(
+    "--energy-page-glow",
+    strength.toFixed(3)
+  );
+
+  return html``;
+}
+```
+
+```{ojs}
+formatPct = value => value == null ? "not reported" : `${d3.format(".1f")(value)}%`
+```
+
+```{ojs}
+energyLamp = {
+  const row = selectedEnergy;
+  const access = Math.max(0, Math.min(100, row.access_electricity_pct ?? 0));
+  const renewable = row.renewable_electricity_pct == null
+    ? null
+    : Math.max(0, Math.min(100, row.renewable_electricity_pct));
+  const brightness = access / 100;
+  const renewableGlow = renewable == null ? 0.25 : renewable / 100;
+  const glowColor = d3.interpolateRgb("#ffd166", "#2dc66d")(renewableGlow);
+  const bulbCore = d3.interpolateRgb("#353a3f", "#fff6b8")(Math.max(0.08, brightness));
+  const glowOpacity = 0.04 + brightness * 0.46;
+  const glowRadius = 86 + brightness * 150;
+  const viewBox = "210 76 300 350";
+  const bulbPath = "M278 210 C278 141 316 92 360 92 C404 92 442 141 442 210 C442 255 417 286 389 307 C376 316 371 336 371 354 L349 354 C349 336 344 316 331 307 C303 286 278 255 278 210 Z";
+
+  const wrap = html`<div class="energy-lamp-wrap"></div>`;
+  const card = html`<div class="energy-lamp-card"></div>`;
+  const svg = d3.create("svg")
+    .attr("viewBox", viewBox)
+    .attr("role", "img")
+    .attr("aria-label", `${row.country_name}: ${formatPct(access)} of people had access to electricity in ${row.year}.`);
+
+  const defs = svg.append("defs");
+
+  defs.append("filter")
+    .attr("id", "soft-blur")
+    .attr("x", "-70%")
+    .attr("y", "-70%")
+    .attr("width", "240%")
+    .attr("height", "240%")
+    .append("feGaussianBlur")
+    .attr("stdDeviation", 22);
+
+  defs.append("filter")
+    .attr("id", "filament-blur")
+    .attr("x", "-60%")
+    .attr("y", "-60%")
+    .attr("width", "220%")
+    .attr("height", "220%")
+    .append("feGaussianBlur")
+    .attr("stdDeviation", 4.5);
+
+  const glow = defs.append("radialGradient")
+    .attr("id", "lamp-glow")
+    .attr("cx", "50%")
+    .attr("cy", "36%")
+    .attr("r", "60%");
+
+  glow.append("stop")
+    .attr("offset", "0%")
+    .attr("stop-color", glowColor)
+    .attr("stop-opacity", glowOpacity);
+
+  glow.append("stop")
+    .attr("offset", "48%")
+    .attr("stop-color", glowColor)
+    .attr("stop-opacity", glowOpacity * 0.28);
+
+  glow.append("stop")
+    .attr("offset", "100%")
+    .attr("stop-color", glowColor)
+    .attr("stop-opacity", 0);
+
+  const glass = defs.append("linearGradient")
+    .attr("id", "bulb-glass")
+    .attr("x1", "30%")
+    .attr("x2", "75%")
+    .attr("y1", "0%")
+    .attr("y2", "100%");
+
+  glass.append("stop")
+    .attr("offset", "0%")
+    .attr("stop-color", "#ffffff")
+    .attr("stop-opacity", 0.65);
+
+  glass.append("stop")
+    .attr("offset", "58%")
+    .attr("stop-color", bulbCore)
+    .attr("stop-opacity", 0.9);
+
+  glass.append("stop")
+    .attr("offset", "100%")
+    .attr("stop-color", "#f1dc83")
+    .attr("stop-opacity", 0.78 + brightness * 0.18);
+
+  const metal = defs.append("linearGradient")
+    .attr("id", "lamp-metal")
+    .attr("x1", "0%")
+    .attr("x2", "100%");
+
+  metal.append("stop")
+    .attr("offset", "0%")
+    .attr("stop-color", "#434d56");
+
+  metal.append("stop")
+    .attr("offset", "50%")
+    .attr("stop-color", "#75808a");
+
+  metal.append("stop")
+    .attr("offset", "100%")
+    .attr("stop-color", "#2f3842");
+
+  svg.append("circle")
+    .attr("cx", 360)
+    .attr("cy", 215)
+    .attr("r", glowRadius)
+    .attr("fill", "url(#lamp-glow)")
+    .attr("filter", "url(#soft-blur)");
+
+  svg.append("circle")
+    .attr("cx", 360)
+    .attr("cy", 222)
+    .attr("r", 42 + brightness * 80)
+    .attr("fill", "#fff7c4")
+    .attr("opacity", 0.03 + brightness * 0.22)
+    .attr("filter", "url(#soft-blur)");
+
+  svg.append("path")
+    .attr("d", bulbPath)
+    .attr("fill", "#fff4b8")
+    .attr("opacity", 0.12 + brightness * 0.32)
+    .attr("filter", "url(#soft-blur)");
+
+  svg.append("path")
+    .attr("d", bulbPath)
+    .attr("fill", "url(#bulb-glass)")
+    .attr("stroke", "#d8e0d7")
+    .attr("stroke-opacity", 0.42 + brightness * 0.3)
+    .attr("stroke-width", 3.2);
+
+  svg.append("path")
+    .attr("d", "M314 199 C332 183 388 183 406 199")
+    .attr("fill", "none")
+    .attr("stroke", "#fff0a6")
+    .attr("stroke-opacity", 0.18 + brightness * 0.65)
+    .attr("stroke-width", 16)
+    .attr("stroke-linecap", "round")
+    .attr("filter", "url(#filament-blur)");
+
+  svg.append("path")
+    .attr("d", "M314 199 C332 183 388 183 406 199")
+    .attr("fill", "none")
+    .attr("stroke", "#fff8c6")
+    .attr("stroke-opacity", 0.38 + brightness * 0.58)
+    .attr("stroke-width", 7)
+    .attr("stroke-linecap", "round");
+
+  svg.append("line")
+    .attr("x1", 331)
+    .attr("x2", 331)
+    .attr("y1", 217)
+    .attr("y2", 294)
+    .attr("stroke", "#d4c784")
+    .attr("stroke-opacity", 0.3 + brightness * 0.4)
+    .attr("stroke-width", 3);
+
+  svg.append("line")
+    .attr("x1", 389)
+    .attr("x2", 389)
+    .attr("y1", 217)
+    .attr("y2", 294)
+    .attr("stroke", "#d4c784")
+    .attr("stroke-opacity", 0.3 + brightness * 0.4)
+    .attr("stroke-width", 3);
+
+  svg.append("path")
+    .attr("d", "M321 145 C340 129 379 127 398 146")
+    .attr("fill", "none")
+    .attr("stroke", "#ffffff")
+    .attr("stroke-opacity", 0.18 + brightness * 0.36)
+    .attr("stroke-width", 6)
+    .attr("stroke-linecap", "round");
+
+  svg.append("rect")
+    .attr("x", 322)
+    .attr("y", 350)
+    .attr("width", 76)
+    .attr("height", 20)
+    .attr("rx", 5)
+    .attr("fill", "url(#lamp-metal)");
+
+  svg.append("rect")
+    .attr("x", 316)
+    .attr("y", 369)
+    .attr("width", 80)
+    .attr("height", 21)
+    .attr("rx", 5)
+    .attr("fill", "#2f3842");
+
+  svg.append("rect")
+    .attr("x", 324)
+    .attr("y", 390)
+    .attr("width", 72)
+    .attr("height", 20)
+    .attr("rx", 4)
+    .attr("fill", "url(#lamp-metal)");
+
+  d3.range(4).forEach(i => {
+    svg.append("line")
+      .attr("x1", 321)
+      .attr("x2", 395)
+      .attr("y1", 356 + i * 14)
+      .attr("y2", 349 + i * 14)
+      .attr("stroke", "#9aa5ae")
+      .attr("stroke-opacity", 0.28)
+      .attr("stroke-width", 2.4)
+      .attr("stroke-linecap", "round");
+  });
+
+  const copy = html`<div class="energy-lamp-copy">
+    <p class="energy-lamp-country">${row.country_name}</p>
+    <p class="energy-lamp-reading">
+      In ${row.year}, ${formatPct(row.access_electricity_pct)} of people had access to electricity.
+      The darker the room, the larger the access gap.
+    </p>
+    <div class="energy-lamp-kpis">
+      <div class="energy-lamp-kpi">
+        <strong>${formatPct(row.rural_access_pct)}</strong>
+        <span>rural electricity access</span>
+      </div>
+      <div class="energy-lamp-kpi">
+        <strong>${formatPct(row.urban_access_pct)}</strong>
+        <span>urban electricity access</span>
+      </div>
+      <div class="energy-lamp-kpi">
+        <strong>${formatPct(row.renewable_electricity_pct)}</strong>
+        <span>renewable share of electricity</span>
+      </div>
+      <div class="energy-lamp-kpi">
+        <strong>${formatPct(row.transmission_losses_pct)}</strong>
+        <span>transmission and distribution losses</span>
+      </div>
+    </div>
+  </div>`;
+
+  card.append(svg.node());
+  card.append(copy);
+  wrap.append(card);
+  return wrap;
+}
+```
+
+:::
+
+:::
+
+:::
