@@ -1,4 +1,28 @@
-week - 21 [sustainable energy](https://github.com/deepdk/TidyTuesday/tree/main/2026/folders/week_21)
+week 26 - [Wreck Inventory of Ireland](https://github.com/deepdk/TidyTuesday/tree/main/2026/folders/week_26)
+
+<img width="880" height="720" alt="chrome-capture-2026-07-22" src="https://github.com/user-attachments/assets/a9b9fb03-be40-4c4b-8100-886e5819e35b" />
+
+---
+
+week 24 - [UK baby Names](https://github.com/deepdk/TidyTuesday/tree/main/2026/folders/week_24)
+
+<img width="1000" height="600" alt="image" src="https://github.com/user-attachments/assets/cf1c44f4-51af-4206-8b44-a689bcaba9e6" />
+
+---
+
+week 23 - [Films Based on Video Games](https://github.com/deepdk/TidyTuesday/tree/main/2026/folders/week_23)
+
+<img width="1000" height="722" alt="image" src="https://github.com/user-attachments/assets/eff6ccf7-6b10-42e9-846e-72c815367792" />
+
+---
+
+week 22 - [European Parenting Leave Policies](https://github.com/deepdk/TidyTuesday/tree/main/2026/folders/week_22)
+
+<img width="833" height="1000" alt="image" src="https://github.com/user-attachments/assets/2d6c4ca3-03be-46ff-87d3-4eb15a419da3" />
+
+---
+
+week - 21 (sustainable energy](https://github.com/deepdk/TidyTuesday/tree/main/2026/folders/week_21)
 
 https://github.com/user-attachments/assets/7a7585db-9fab-45a0-92f8-167d18955cc0
 
