@@ -1,0 +1,580 @@
+---
+title: "Parenting Leave Policies Across Europe"
+subtitle: "2024 job-protected and paid leave weeks by country and caregiver type"
+author: "Deepali Kank"
+date: 2026-06-02
+format:
+  html:
+    page-layout: full
+    toc: false
+    embed-resources: true
+execute:
+  echo: false
+  warning: false
+  message: false
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r}
+#| label: setup
+library(tidyverse)
+library(janitor)
+library(here)
+library(fs)
+library(scales)
+library(countrycode)
+library(ggiraph)
+library(mypaintr)
+library(knitr)
+
+title_font <- "Georgia"
+body_font <- "Arial"
+
+source(here("R", "theme_deepali.R"))
+theme_set(theme_deepali(base_family = body_font))
+
+plots_dir <- here("plots", "2026", "png")
+data_processed_dir <- here("data", "processed", "2026")
+
+dir_create(c(plots_dir, data_processed_dir))
+```
+
+```{=html}
+<style>
+body {
+  font-family: Arial, system-ui, sans-serif;
+  background: #eeeae4;
+  color: #171411;
+}
+
+h1,
+h2,
+h3,
+.title {
+  font-family: Georgia, "Times New Roman", serif;
+  letter-spacing: 0;
+}
+
+#quarto-content,
+main,
+.page-columns,
+.content,
+.column-page,
+.column-body {
+  background: transparent;
+}
+</style>
+```
+
+```{r}
+#| label: load-and-clean
+data_url <- "https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2026/2026-06-02"
+
+eplp <- read_csv(
+  str_c(data_url, "/eplp.csv"),
+  show_col_types = FALSE
+) |>
+  clean_names() |>
+  mutate(
+    across(where(is.numeric), \(value) na_if(value, -98)),
+    across(where(is.character), \(value) na_if(value, "Not applicable")),
+    country_name = countrycode(
+      country,
+      origin = "iso2c",
+      destination = "country.name",
+      custom_match = c(UK = "United Kingdom")
+    )
+  )
+```
+
+```{r}
+#| label: prepare-2024-leave
+leave_2024 <- eplp |>
+  filter(year == 2024) |>
+  transmute(
+    country,
+    country_name,
+    maternity_weeks = rowSums(
+      pick(mat_m_ld_bb, mat_m_ld_ab, mat_v_ld_bb, mat_v_ld_ab),
+      na.rm = TRUE
+    ),
+    birth_mother_weeks = jp_ld_m,
+    co_parent_weeks = jp_ld_co,
+    paid_parental_weeks = par1_ld,
+    co_parent_dedicated_weeks = co_ld,
+    leave_gap_weeks = birth_mother_weeks - co_parent_weeks
+  ) |>
+  arrange(desc(birth_mother_weeks), country_name)
+
+write_csv(
+  leave_2024,
+  path(data_processed_dir, "tt_2026_w22_2024_leave_gap.csv")
+)
+```
+
+```{r}
+#| label: build-flower-poster
+#| out-width: 100%
+#| out-height: 1200px
+country_layout <- tribble(
+  ~country, ~x, ~y,
+  "NO", 4.6, 8.1,
+  "SE", 5.6, 8.1,
+  "FI", 6.6, 8.1,
+  "EE", 6.6, 7.1,
+  "IE", 1.0, 6.1,
+  "UK", 2.0, 6.1,
+  "DK", 4.6, 6.1,
+  "LT", 6.6, 6.1,
+  "BE", 3.0, 5.1,
+  "NL", 4.0, 5.1,
+  "DE", 5.0, 5.1,
+  "PL", 6.0, 5.1,
+  "FR", 2.0, 4.1,
+  "CZ", 5.0, 4.1,
+  "SK", 6.0, 4.1,
+  "ES", 2.0, 3.1,
+  "IT", 4.0, 3.1,
+  "AT", 5.0, 3.1,
+  "HU", 6.0, 3.1,
+  "SI", 4.0, 2.1,
+  "GR", 6.0, 1.45
+)
+
+plot_data <- leave_2024 |>
+  inner_join(
+    country_layout,
+    by = join_by(country),
+    relationship = "one-to-one"
+  ) |>
+  mutate(
+    country_label = recode(
+      country_name,
+      "United Kingdom" = "United\nKingdom",
+      "Netherlands" = "Nether-\nlands",
+      .default = country_name
+    )
+  )
+
+flower_variables <- tribble(
+  ~variable, ~label, ~angle, ~fill,
+  "birth_mother_weeks", "Birth mother job-protected", pi / 2, "#e7785f",
+  "co_parent_weeks", "Co-parent job-protected", pi / 2 + 2 * pi / 5, "#4f98a8",
+  "paid_parental_weeks", "Paid parental", pi / 2 + 4 * pi / 5, "#f0b35c",
+  "co_parent_dedicated_weeks", "Dedicated co-parent", pi / 2 + 6 * pi / 5, "#8f78b8",
+  "maternity_weeks", "Maternity", pi / 2 + 8 * pi / 5, "#7ea35d"
+)
+
+max_leave_weeks <- leave_2024 |>
+  select(all_of(flower_variables$variable)) |>
+  unlist(use.names = FALSE) |>
+  max(na.rm = TRUE)
+
+make_petal <- function(cx, cy, weeks, angle, id, variable, label, country_name) {
+  week_scale <- sqrt(coalesce(weeks, 0) / max_leave_weeks)
+  petal_length <- 0.08 + 0.34 * week_scale
+  petal_width <- 0.04 + 0.12 * week_scale
+  theta <- seq(0, 2 * pi, length.out = 90)
+  local_x <- petal_length * 0.46 + (petal_length * 0.50) * cos(theta)
+  local_y <- petal_width * sin(theta)
+  week_label <- if_else(
+    is.na(weeks),
+    "No data",
+    str_c(number(weeks, accuracy = 0.1, trim = TRUE), " weeks")
+  )
+
+  tibble(
+    id = id,
+    variable = variable,
+    label = label,
+    weeks = weeks,
+    tooltip = str_glue("<b>{country_name}</b><br>{label}: {week_label}"),
+    data_id = str_c(id, "_", country_name),
+    x = cx + local_x * cos(angle) - local_y * sin(angle),
+    y = cy + local_x * sin(angle) + local_y * cos(angle)
+  )
+}
+
+flower_data <- plot_data |>
+  mutate(row_id = row_number()) |>
+  pivot_longer(
+    cols = c(
+      birth_mother_weeks,
+      co_parent_weeks,
+      paid_parental_weeks,
+      co_parent_dedicated_weeks,
+      maternity_weeks
+    ),
+    names_to = "variable",
+    values_to = "weeks"
+  ) |>
+  inner_join(
+    flower_variables,
+    by = join_by(variable),
+    relationship = "many-to-one"
+  ) |>
+  mutate(petal_id = str_c(country, "_", variable)) |>
+  pmap(
+    \(country, country_name, paid_parental_weeks, co_parent_dedicated_weeks,
+      leave_gap_weeks, x, y, country_label, maternity_weeks, row_id, variable,
+      weeks, label, angle, fill, petal_id) {
+      make_petal(x, y, weeks, angle, petal_id, variable, label, country_name)
+    }
+  ) |>
+  list_rbind()
+
+flower_centres <- plot_data |>
+  mutate(
+    centre_size = rescale(
+      paid_parental_weeks,
+      to = c(1.1, 3.4),
+      from = c(0, max_leave_weeks)
+    )
+  )
+
+tile_data <- plot_data |>
+  transmute(
+    country,
+    xmin = x - 0.43,
+    xmax = x + 0.43,
+    ymin = y - 0.43,
+    ymax = y + 0.43
+  )
+
+legend_flower_centre <- tibble(
+  x = 1.0,
+  y = 8.45,
+  country = "legend",
+  country_name = "Legend",
+  country_label = "Legend",
+  birth_mother_weeks = 120,
+  co_parent_weeks = 90,
+  paid_parental_weeks = 70,
+  co_parent_dedicated_weeks = 35,
+  maternity_weeks = 25,
+  leave_gap_weeks = 30
+)
+
+legend_flower_data <- legend_flower_centre |>
+  pivot_longer(
+    cols = c(
+      birth_mother_weeks,
+      co_parent_weeks,
+      paid_parental_weeks,
+      co_parent_dedicated_weeks,
+      maternity_weeks
+    ),
+    names_to = "variable",
+    values_to = "weeks"
+  ) |>
+  inner_join(
+    flower_variables,
+    by = join_by(variable),
+    relationship = "many-to-one"
+  ) |>
+  mutate(petal_id = str_c("legend_", variable)) |>
+  pmap(
+    \(x, y, country, country_name, country_label, leave_gap_weeks, variable,
+      weeks, label, angle, fill, petal_id) {
+      make_petal(x, y, weeks, angle, petal_id, variable, label, country_name)
+    }
+  ) |>
+  list_rbind()
+
+legend_items <- flower_variables |>
+  mutate(
+    x = 1.55,
+    y = 8.95 - (row_number() - 1) * 0.30
+  )
+
+leave_colours <- c(
+  setNames(flower_variables$fill, flower_variables$variable)
+)
+
+leave_flower_plot <- ggplot() +
+  geom_rect(
+    data = tile_data,
+    aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+    fill = "#f7f2ea",
+    colour = "#ded7cd",
+    linewidth = 0.22
+  ) +
+  geom_polygon_interactive(
+    data = flower_data,
+    aes(
+      x = x,
+      y = y,
+      group = id,
+      fill = variable,
+      tooltip = tooltip,
+      data_id = data_id
+    ),
+    alpha = 0.86,
+    colour = "#eeeae4",
+    linewidth = 0.12
+  ) +
+  geom_point(
+    data = flower_centres,
+    aes(x = x, y = y, size = centre_size),
+    shape = 21,
+    fill = "#f8f4ec",
+    colour = "#4f4840",
+    stroke = 0.35
+  ) +
+  geom_polygon(
+    data = legend_flower_data,
+    aes(x = x, y = y, group = id, fill = variable),
+    alpha = 0.86,
+    colour = "#eeeae4",
+    linewidth = 0.12
+  ) +
+  geom_point(
+    data = legend_flower_centre,
+    aes(x = x, y = y),
+    shape = 21,
+    size = 3.0,
+    fill = "#f8f4ec",
+    colour = "#4f4840",
+    stroke = 0.35
+  ) +
+  geom_point(
+    data = legend_items,
+    aes(x = x, y = y, fill = variable),
+    shape = 21,
+    size = 3.3,
+    colour = "#4f4840",
+    stroke = 0.2
+  ) +
+  geom_text(
+    data = legend_items,
+    aes(x = x + 0.18, y = y, label = label),
+    family = title_font,
+    size = 3.0,
+    hjust = 0
+  ) +
+  geom_text(
+    data = plot_data,
+    aes(x = x, y = y - 0.34, label = country_label),
+    family = body_font,
+    fontface = "bold",
+    size = 2.1,
+    lineheight = 0.78,
+    colour = "#171411"
+  ) +
+  annotate(
+    "text",
+    x = 0.55,
+    y = 9.75,
+    label = "Parenting Leave Policies Across Europe",
+    family = title_font,
+    fontface = "bold",
+    size = 9.4,
+    hjust = 0
+  ) +
+  annotate(
+    "text",
+    x = 0.55,
+    y = 9.40,
+    label = "2024 job-protected and paid leave weeks by country and caregiver type",
+    family = title_font,
+    size = 4.7,
+    hjust = 0
+  ) +
+  annotate(
+    "text",
+    x = 0.55,
+    y = 0.22,
+    label = "Each petal uses the original reported week value, scaled against the 2024 maximum in this view. Hover over petals to read exact weeks.\nSource: TidyTuesday 2026 Week 22, European Parenting Leave Policies Dataset.",
+    family = body_font,
+    size = 3.0,
+    hjust = 0,
+    lineheight = 1.15,
+    colour = "#77736d"
+  ) +
+  scale_fill_manual(values = leave_colours, guide = "none") +
+  scale_size_identity() +
+  coord_equal(
+    xlim = c(0.25, 7.25),
+    ylim = c(0.25, 10.05),
+    expand = FALSE,
+    clip = "off"
+  ) +
+  theme_void(base_family = body_font) +
+  theme(
+    plot.background = element_rect(fill = "#eeeae4", colour = NA),
+    panel.background = element_rect(fill = "#eeeae4", colour = NA),
+    plot.margin = margin(18, 18, 18, 18)
+  )
+
+ggsave(
+  filename = path(plots_dir, "tt_2026_w22_2024_leave_flowers.png"),
+  plot = leave_flower_plot,
+  width = 10,
+  height = 12,
+  dpi = 320,
+  bg = "#eeeae4"
+)
+
+ggsave(
+  filename = path(plots_dir, "tt_2026_w22_2024_leave_flowers.svg"),
+  plot = leave_flower_plot,
+  width = 10,
+  height = 12,
+  bg = "#eeeae4"
+)
+
+painted_petal_layer <- mypaint_wrap(
+  geom_polygon(
+    data = flower_data,
+    aes(x = x, y = y, group = id, fill = variable),
+    alpha = 0.82,
+    colour = "#eeeae4",
+    linewidth = 0.12
+  ),
+  brush = "classic/dry_brush",
+  fill_brush = "classic/dry_brush",
+  hand = hand(seed = 22, wobble = 0.008, multi_stroke = 2, width_jitter = 0.01)
+)
+
+leave_flower_painted_plot <- ggplot() +
+  geom_rect(
+    data = tile_data,
+    aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+    fill = "#f7f2ea",
+    colour = "#ded7cd",
+    linewidth = 0.22
+  ) +
+  painted_petal_layer +
+  geom_point(
+    data = flower_centres,
+    aes(x = x, y = y, size = centre_size),
+    shape = 21,
+    fill = "#f8f4ec",
+    colour = "#4f4840",
+    stroke = 0.35
+  ) +
+  geom_polygon(
+    data = legend_flower_data,
+    aes(x = x, y = y, group = id, fill = variable),
+    alpha = 0.86,
+    colour = "#eeeae4",
+    linewidth = 0.12
+  ) +
+  geom_point(
+    data = legend_flower_centre,
+    aes(x = x, y = y),
+    shape = 21,
+    size = 3.0,
+    fill = "#f8f4ec",
+    colour = "#4f4840",
+    stroke = 0.35
+  ) +
+  geom_point(
+    data = legend_items,
+    aes(x = x, y = y, fill = variable),
+    shape = 21,
+    size = 3.3,
+    colour = "#4f4840",
+    stroke = 0.2
+  ) +
+  geom_text(
+    data = legend_items,
+    aes(x = x + 0.18, y = y, label = label),
+    family = title_font,
+    size = 3.0,
+    hjust = 0
+  ) +
+  geom_text(
+    data = plot_data,
+    aes(x = x, y = y - 0.34, label = country_label),
+    family = body_font,
+    fontface = "bold",
+    size = 2.1,
+    lineheight = 0.78,
+    colour = "#171411"
+  ) +
+  annotate(
+    "text",
+    x = 0.55,
+    y = 9.75,
+    label = "Parenting Leave Policies Across Europe",
+    family = title_font,
+    fontface = "bold",
+    size = 9.4,
+    hjust = 0
+  ) +
+  annotate(
+    "text",
+    x = 0.55,
+    y = 9.40,
+    label = "2024 job-protected and paid leave weeks by country and caregiver type",
+    family = title_font,
+    size = 4.7,
+    hjust = 0
+  ) +
+  annotate(
+    "text",
+    x = 0.55,
+    y = 0.22,
+    label = "Static brush-stroke version rendered with mypaintr. Petal size uses the original reported week value, scaled against the 2024 maximum.\nSource: TidyTuesday 2026 Week 22, European Parenting Leave Policies Dataset.",
+    family = body_font,
+    size = 3.0,
+    hjust = 0,
+    lineheight = 1.15,
+    colour = "#77736d"
+  ) +
+  scale_fill_manual(values = leave_colours, guide = "none") +
+  scale_size_identity() +
+  coord_equal(
+    xlim = c(0.25, 7.25),
+    ylim = c(0.25, 10.05),
+    expand = FALSE,
+    clip = "off"
+  ) +
+  theme_void(base_family = body_font) +
+  theme(
+    plot.background = element_rect(fill = "#eeeae4", colour = NA),
+    panel.background = element_rect(fill = "#eeeae4", colour = NA),
+    plot.margin = margin(18, 18, 18, 18)
+  )
+
+ggsave(
+  filename = path(plots_dir, "tt_2026_w22_2024_leave_flowers_mypaintr.png"),
+  plot = leave_flower_painted_plot,
+  device = mypaint_device,
+  width = 10,
+  height = 12,
+  dpi = 320,
+  bg = "#eeeae4"
+)
+
+girafe(
+  ggobj = leave_flower_plot,
+  width_svg = 10,
+  height_svg = 12,
+  options = list(
+    opts_hover(css = "fill-opacity:1;stroke:#171411;stroke-width:1.2px;cursor:pointer;"),
+    opts_hover_inv(css = "opacity:0.35;"),
+    opts_tooltip(
+      css = str_c(
+        "background:#171411;color:#f8f4ec;padding:8px 12px;",
+        "border-radius:6px;font-family:Arial,system-ui,sans-serif;",
+        "font-size:13px;line-height:1.35;",
+        "box-shadow:0 4px 12px rgba(0,0,0,0.28);"
+      ),
+      opacity = 0.96
+    ),
+    opts_sizing(rescale = FALSE),
+    opts_toolbar(saveaspng = TRUE)
+  )
+)
+```
+
+## Brush-Stroke Static Version
+
+```{r}
+#| label: painted-static-version
+#| out-width: 100%
+include_graphics(path(plots_dir, "tt_2026_w22_2024_leave_flowers_mypaintr.png"))
+```
