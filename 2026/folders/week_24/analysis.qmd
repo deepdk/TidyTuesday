@@ -1,0 +1,282 @@
+---
+title: "The Bridgerton Baby Names"
+author: "Deepali Kank"
+date: 2026-06-16
+format:
+  html:
+    page-layout: full
+    toc: false
+    embed-resources: true
+execute:
+  echo: false
+  warning: false
+  message: false
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r}
+#| label: setup
+
+# Packages ---------------------------------------------------------------
+
+library(tidyverse)
+library(ggrepel)
+library(ggtext)
+
+# Data -------------------------------------------------------------------
+
+data_url <- "https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2026/2026-06-16"
+
+all_names <- readr::read_csv(
+  stringr::str_c(data_url, "/england_wales_names.csv"),
+  show_col_types = FALSE
+) |>
+  janitor::clean_names() |>
+  mutate(name = str_to_title(name))
+
+bridgerton_names <- tribble(
+  ~name,        ~flower_tone, ~name_order,
+  "Violet",    "violet",      1,
+  "Eloise",    "leaf",        2,
+  "Francesca", "rose",        3,
+  "Daphne",    "petal",       4,
+  "Hyacinth",  "ivory",       5
+)
+
+bridgerton_data <- all_names |>
+  filter(sex == "Girl", year >= 1996) |>
+  inner_join(bridgerton_names, by = join_by(name), unmatched = "drop")
+
+bridgerton_summary <- bridgerton_data |>
+  summarise(
+    rank_2024 = rank[year == 2024][1],
+    peak_number = max(number, na.rm = TRUE),
+    peak_year = year[which.max(number)],
+    .by = c(name, flower_tone, name_order)
+  ) |>
+  arrange(name_order) |>
+  mutate(
+    rank_2024 = replace_na(rank_2024, NA_real_),
+    name = fct_reorder(name, name_order, .desc = TRUE)
+  )
+
+plot_data <- bridgerton_data |>
+  select(year, name, number) |>
+  complete(
+    year = full_seq(year, 1),
+    name = bridgerton_names$name,
+    fill = list(number = 0)
+  ) |>
+  left_join(bridgerton_names, by = join_by(name), relationship = "many-to-one") |>
+  left_join(
+    bridgerton_summary |>
+      mutate(name = as.character(name)) |>
+      select(name, rank_2024, peak_number, peak_year),
+    by = join_by(name),
+    relationship = "many-to-one"
+  ) |>
+  mutate(
+    name = fct_reorder(name, name_order, .desc = TRUE),
+    size_number = if_else(number > 0, number, NA_real_),
+    peak_label = str_glue("{scales::comma(peak_number)} in {peak_year}")
+  )
+
+bridgerton_peaks <- plot_data |>
+  filter(year == peak_year, number == peak_number)
+
+bridgerton_2024 <- plot_data |>
+  filter(year == 2024)
+
+# Miscs ------------------------------------------------------------------
+
+font_display <- "Snell Roundhand"
+font_body <- "Avenir"
+
+color_paper <- "#f4edf6"
+color_ink <- "#2f2731"
+color_violet_dark <- "#4a2d62"
+color_muted <- "#857585"
+color_stem <- "#b7b9a3"
+color_bridgerton <- c(
+  ivory = "#efe8b9",
+  leaf = "#9fb0a6",
+  petal = "#8fb0c6",
+  rose = "#d9a7c7",
+  violet = "#7c8faa"
+)
+color_bridgerton_text <- c(
+  ivory = "#b79a3f",
+  leaf = "#6d8176",
+  petal = "#4f8ea5",
+  rose = "#b86598",
+  violet = "#647994"
+)
+
+# Texts ------------------------------------------------------------------
+
+title_text <- "<span style='color:#4a2d62'>The Bridgerton</span> baby names: old peaks, new blooms"
+subtitle_text <- str_glue(
+  "Annual girls' births in England & Wales from 1996-2024 show very different arcs: <b>Violet</b> rose into the top 50, ",
+  "<b>Francesca</b> peaked early in 1998.<br><b>Daphne</b> reached its best year in 2024, ",
+  "and <b>Hyacinth</b> appears only as a tiny 2024 debut with 3 births."
+)
+caption_text <- str_glue(
+  "Source: Office for National Statistics via TidyTuesday 2026 W24. ",
+  "Annual births for girls in England and Wales, 1996-2024."
+)
+
+# Plots ------------------------------------------------------------------
+
+theme_set(theme_minimal(base_size = 11, base_family = font_body))
+```
+
+```{=html}
+<style>
+body,
+#quarto-content,
+main,
+.page-columns,
+.content,
+.column-page,
+.column-body {
+  background: #f4edf6;
+  color: #2f2731;
+}
+
+.quarto-title-block {
+  display: none;
+}
+</style>
+```
+
+```{r}
+#| label: bridgerton-history
+#| fig-width: 13
+#| fig-height: 7.8
+
+p <- plot_data |>
+  ggplot(aes(x = year, y = name)) +
+  annotate(
+    "rect",
+    xmin = 2020,
+    xmax = 2024.8,
+    ymin = -Inf,
+    ymax = Inf,
+    fill = "#eadfed",
+    alpha = 0.45
+  ) +
+  geom_line(
+    aes(group = name),
+    color = color_stem,
+    linewidth = 0.55,
+    alpha = 0.55
+  ) +
+  geom_point(
+    data = \(x) filter(x, !is.na(size_number)),
+    aes(size = size_number, fill = flower_tone),
+    shape = 21,
+    color = color_paper,
+    stroke = 0.35,
+    alpha = 0.9
+  ) +
+  geom_point(
+    data = bridgerton_peaks,
+    aes(fill = flower_tone),
+    shape = 21,
+    color = color_ink,
+    stroke = 0.5,
+    size = 4.4
+  ) +
+  ggrepel::geom_text_repel(
+    data = bridgerton_peaks,
+    aes(label = peak_label, color = flower_tone),
+    family = font_body,
+    fontface = "bold",
+    size = 3,
+    direction = "x",
+    nudge_y = 0.35,
+    segment.color = color_stem,
+    segment.size = 0.2,
+    box.padding = 0.25,
+    min.segment.length = 0,
+    seed = 24
+  ) +
+  geom_point(
+    data = bridgerton_2024,
+    aes(fill = flower_tone),
+    shape = 21,
+    color = color_ink,
+    stroke = 0.5,
+    size = 4.4
+  ) +
+  ggrepel::geom_text_repel(
+    data = bridgerton_2024,
+    aes(
+      label = str_glue("#{scales::comma(rank_2024)} · {scales::comma(number)} births"),
+      color = flower_tone
+    ),
+    family = font_body,
+    fontface = "bold",
+    size = 3.2,
+    direction = "y",
+    hjust = 0,
+    nudge_x = 1.25,
+    segment.color = color_stem,
+    segment.size = 0.2,
+    box.padding = 0.25,
+    min.segment.length = 0,
+    seed = 16
+  ) +
+  annotate(
+    "text",
+    x = 2022.45,
+    y = 5.62,
+    label = "recent seasons",
+    family = font_display,
+    color = color_muted,
+    fontface = "italic",
+    size = 3.6
+  ) +
+  scale_x_continuous(
+    breaks = c(1996, 2004, 2012, 2020, 2024),
+    limits = c(1995.4, 2029),
+    expand = expansion(mult = c(0.01, 0.01))
+  ) +
+  scale_y_discrete(expand = expansion(add = c(0.65, 0.85))) +
+  scale_size_area(max_size = 15, breaks = c(3, 250, 500, 1000), guide = "none") +
+  scale_color_manual(values = color_bridgerton_text) +
+  scale_fill_manual(values = color_bridgerton) +
+  labs(
+    title = title_text,
+    subtitle = subtitle_text,
+    caption = caption_text,
+    x = NULL,
+    y = NULL
+  ) +
+  theme(
+    plot.background = element_rect(fill = color_paper, color = NA),
+    panel.background = element_rect(fill = color_paper, color = NA),
+    panel.grid = element_blank(),
+    axis.text.x = element_text(color = color_ink, size = 9),
+    axis.text.y = element_text(color = color_ink, face = "bold", size = 13),
+    legend.position = "none",
+    plot.title = ggtext::element_markdown(
+      color = color_violet_dark,
+      face = "bold",
+      family = font_display,
+      size = 38,
+      margin = margin(b = 7)
+    ),
+    plot.subtitle = ggtext::element_markdown(
+      color = color_ink,
+      size = 12,
+      lineheight = 1.2,
+      margin = margin(b = 18)
+    ),
+    plot.caption = element_text(color = color_muted, size = 8, hjust = 0.5),
+    plot.margin = margin(18, 22, 14, 22)
+  )
+
+p
+```
