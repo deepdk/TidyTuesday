@@ -1,0 +1,609 @@
+---
+title: "Ghost Ships of Ireland's Coast"
+subtitle: "Named wrecks drift across a living sea of Irish maritime records"
+author: "Deepali Kank"
+date: 2026-06-30
+format:
+  html:
+    page-layout: full
+    embed-resources: false
+    toc: false
+execute:
+  echo: false
+  warning: false
+  message: false
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r}
+#| label: setup
+
+# Packages ---------------------------------------------------------------
+
+library(tidyverse)
+library(jsonlite)
+
+# Data -------------------------------------------------------------------
+
+data_url <- "https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2026/2026-06-30/wreck_inventory.csv"
+
+wrecks <- readr::read_csv(data_url, show_col_types = FALSE) |>
+  mutate(
+    year = as.integer(year),
+    wreck_name = str_squish(wreck_name),
+    ship_name = str_to_title(wreck_name),
+    classification = na_if(str_squish(classification), ""),
+    place_of_loss = na_if(str_squish(place_of_loss), ""),
+    description = na_if(str_squish(description), "")
+  )
+
+first_or <- function(x, default) {
+  x <- x[!is.na(x)]
+  if (length(x) == 0) default else x[[1]]
+}
+
+top_or <- function(x, default) {
+  x <- x[!is.na(x)]
+  if (length(x) == 0) default else names(sort(table(x), decreasing = TRUE))[[1]]
+}
+
+ship_info <- wrecks |>
+  filter(!is.na(wreck_name), wreck_name != "", !str_to_lower(wreck_name) %in% c("unknown", "unnamed")) |>
+  arrange(ship_name, year) |>
+  summarise(
+    name = first(ship_name),
+    records = n(),
+    year_min = suppressWarnings(min(year, na.rm = TRUE)),
+    year_max = suppressWarnings(max(year, na.rm = TRUE)),
+    classification = top_or(classification, "Unknown"),
+    place = first_or(place_of_loss, "Location not listed"),
+    description = first_or(description, "No description available."),
+    wreck_no = str_c(head(na.omit(wreck_no), 3), collapse = ", "),
+    .by = ship_name
+  ) |>
+  mutate(
+    year_min = if_else(is.infinite(year_min), NA_integer_, as.integer(year_min)),
+    year_max = if_else(is.infinite(year_max), NA_integer_, as.integer(year_max)),
+    year_span = case_when(
+      is.na(year_min) & is.na(year_max) ~ "Year unknown",
+      year_min == year_max ~ as.character(year_min),
+      TRUE ~ str_c(year_min, "–", year_max)
+    ),
+    description = str_trunc(description, 260),
+    wreck_no = na_if(wreck_no, "")
+  ) |>
+  arrange(name)
+
+# Miscs ------------------------------------------------------------------
+
+ship_info_json <- jsonlite::toJSON(ship_info, dataframe = "rows", auto_unbox = TRUE, na = "null")
+name_count <- nrow(ship_info)
+record_count <- nrow(wrecks)
+```
+
+```{=html}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Inter:wght@400;600;700;800&display=swap');
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  body .page-columns,
+  body .page-full,
+  body main,
+  body .content,
+  body .column-body,
+  body .column-page,
+  body .column-screen {
+    display: block !important;
+    width: 100vw !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .quarto-title-block,
+  #title-block-header,
+  .figure-caption,
+  p:empty {
+    display: none !important;
+  }
+
+  #wreck-wave-stage {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: radial-gradient(circle at 50% 18%, #fff 0%, #f4f4f4 48%, #e7e7e7 100%);
+    color: #000;
+  }
+
+  #wreck-wave-canvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    background: transparent;
+    cursor: crosshair;
+  }
+
+  #wreck-info-panel {
+    position: fixed;
+    top: 148px;
+    right: 36px;
+    transform: translateY(-12px);
+    width: min(620px, calc(100vw - 72px));
+    max-height: none;
+    overflow: hidden;
+    padding: 18px 22px;
+    border-radius: 22px;
+    color: #000;
+    background: linear-gradient(155deg, rgba(255, 255, 255, 0.96), rgba(238, 238, 238, 0.92));
+    border: 1px solid rgba(0, 0, 0, 0.26);
+    box-shadow: 0 28px 80px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 180ms ease, transform 180ms ease;
+  }
+
+  #wreck-info-panel.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  #wreck-info-panel .eyebrow {
+    margin: 0 0 8px;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #333;
+  }
+
+  #wreck-info-panel h2 {
+    margin: 0 0 10px;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: clamp(30px, 3.4vw, 44px);
+    line-height: 0.92;
+    color: #000;
+  }
+
+  #wreck-info-panel dl {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    gap: 8px 14px;
+    margin: 0 0 10px;
+    font-size: 13px;
+  }
+
+  #wreck-info-panel dt { color: #555; }
+  #wreck-info-panel dd { margin: 0; color: #000; }
+
+  #wreck-info-panel .description {
+    display: -webkit-box;
+    margin: 10px 0 0;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font: 500 15px/1.34 "Cormorant Garamond", Georgia, serif;
+    color: #222;
+  }
+
+  #wreck-info-panel button {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    border: 0;
+    color: #000;
+    background: transparent;
+    font-size: 24px;
+    cursor: pointer;
+  }
+</style>
+
+<div id="wreck-wave-stage">
+  <canvas id="wreck-wave-canvas"></canvas>
+  <aside id="wreck-info-panel" aria-live="polite">
+    <button id="wreck-info-close" type="button" aria-label="Close ship details">×</button>
+    <p class="eyebrow">Click a ship name</p>
+    <h2>Ship details</h2>
+    <dl>
+      <dt>Records</dt><dd>—</dd>
+      <dt>Years</dt><dd>—</dd>
+      <dt>Type</dt><dd>—</dd>
+      <dt>Place</dt><dd>—</dd>
+    </dl>
+    <p class="description">Choose a name drifting through the waves to surface its inventory notes.</p>
+  </aside>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+```
+
+```{r}
+#| label: animated-waves
+#| results: asis
+
+cat(
+  "<script>\n",
+  "const shipInfo = ", ship_info_json, ";\n",
+  "const shipNames = shipInfo.map(d => d.name);\n",
+  "const nameCount = ", name_count, ";\n",
+  "const recordCount = ", record_count, ";\n",
+  "</script>\n",
+  sep = ""
+)
+```
+
+```{=html}
+<script>
+(() => {
+  const canvas = document.getElementById("wreck-wave-canvas");
+  const ctx = canvas.getContext("2d");
+  const stage = document.getElementById("wreck-wave-stage");
+  const panel = document.getElementById("wreck-info-panel");
+  const closePanel = document.getElementById("wreck-info-close");
+  const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const state = {
+    width: 0,
+    height: 0,
+    dpr: 1,
+    names: [],
+    rows: [],
+    hits: [],
+    ship: { x: 0, y: 0, speed: 18, phase: 0 }
+  };
+
+  const fontStack = "'Cormorant Garamond', Georgia, 'Times New Roman', serif";
+  const uiFont = "Inter, -apple-system, BlinkMacSystemFont, 'Avenir Next', 'Helvetica Neue', Arial, sans-serif";
+  const palette = {
+    skyTop: "#ffffff",
+    skyBottom: "#e7e7e7",
+    seaLine: "rgba(0, 0, 0, 0.22)",
+    waveLine: "rgba(0, 0, 0, 0.13)",
+    text: "#000000",
+    title: "#000000",
+    muted: "#333333",
+    ship: "#000000",
+    shipStroke: "#ffffff"
+  };
+  const infoByName = new Map(shipInfo.map(d => [d.name, d]));
+
+  function resize() {
+    state.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    state.width = window.innerWidth;
+    state.height = window.innerHeight;
+    canvas.width = Math.floor(state.width * state.dpr);
+    canvas.height = Math.floor(state.height * state.dpr);
+    canvas.style.width = `${state.width}px`;
+    canvas.style.height = `${state.height}px`;
+    ctx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
+    prepareNames();
+  }
+
+  function prepareNames() {
+    const w = state.width;
+    const h = state.height;
+    const compactWave = Math.max(1, Math.min(1.85, 1050 / w));
+    const topSea = Math.max(282, h * 0.39);
+    const bottomPad = Math.max(2, h * 0.012);
+    const rowGap = Math.max(34, Math.min(46, h / 17));
+    const rowCount = Math.max(7, Math.floor((h - topSea - bottomPad) / rowGap));
+    const fontSize = Math.max(15, Math.min(24, w / 58));
+    const gap = Math.max(28, fontSize * 1.75);
+
+    state.rows = d3.range(rowCount).map(row => ({
+      y: topSea + row * rowGap,
+      phase: row * 0.78,
+      amp: (14 + (row % 4) * 4.5) * compactWave,
+      freq: (0.0078 + (row % 5) * 0.0017) * compactWave,
+      speed: 34 + (row % 6) * 3,
+      fontSize,
+      names: [],
+      offsets: [],
+      totalWidth: 0
+    }));
+
+    shipNames.forEach((name, i) => {
+      const row = state.rows[i % rowCount];
+      const size = fontSize + (i % 29 === 0 ? 3 : 0);
+      ctx.font = `italic ${size}px ${fontStack}`;
+      const width = ctx.measureText(name).width + gap;
+      row.names.push({ name, info: infoByName.get(name), width, size });
+      row.totalWidth += width;
+    });
+
+    state.rows.forEach((row, rowIndex) => {
+      let x = 0;
+      row.names.forEach(item => {
+        row.offsets.push(x);
+        x += item.width;
+      });
+      row.start = (row.totalWidth * (rowIndex * 0.173 + 0.07)) % row.totalWidth;
+    });
+
+    state.ship.x = w * 0.62;
+    state.ship.y = topSea - Math.max(82, h * 0.112);
+    state.ship.speed = Math.max(18, w / 58);
+  }
+
+  function drawShip(cx, cy, scale, t) {
+    ctx.save();
+    ctx.translate(cx, cy + Math.sin(t * 1.8) * 7);
+    ctx.rotate(Math.sin(t * 1.25) * 0.035);
+    ctx.scale(scale, scale);
+    ctx.fillStyle = palette.ship;
+    ctx.strokeStyle = palette.shipStroke;
+    ctx.lineWidth = 2.4;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    // Hull with raised bow and stern, drawn as a side-view vessel.
+    ctx.beginPath();
+    ctx.moveTo(-78, 19);
+    ctx.bezierCurveTo(-58, 34, -31, 42, 14, 41);
+    ctx.bezierCurveTo(58, 40, 83, 27, 93, 7);
+    ctx.lineTo(69, 55);
+    ctx.bezierCurveTo(33, 69, -35, 67, -68, 51);
+    ctx.bezierCurveTo(-80, 40, -86, 28, -78, 19);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = palette.shipStroke;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-66, 34);
+    ctx.bezierCurveTo(-25, 52, 38, 54, 74, 36);
+    ctx.stroke();
+
+    // Deckhouse and bridge.
+    ctx.fillStyle = palette.ship;
+    ctx.beginPath();
+    ctx.rect(-24, -8, 58, 26);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(-10, -30);
+    ctx.lineTo(29, -30);
+    ctx.lineTo(42, -8);
+    ctx.lineTo(-24, -8);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = palette.shipStroke;
+    for (let x = -13; x <= 24; x += 18) {
+      ctx.fillRect(x, -22, 10, 7);
+    }
+    ctx.fillRect(-14, 1, 10, 8);
+    ctx.fillRect(6, 1, 10, 8);
+    ctx.fillRect(26, 1, 10, 8);
+
+    // Mast, rigging, funnel, and railings make the silhouette read as a ship.
+    ctx.strokeStyle = palette.ship;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(0, -83);
+    ctx.lineTo(0, -30);
+    ctx.stroke();
+
+    ctx.lineWidth = 1.7;
+    ctx.beginPath();
+    ctx.moveTo(0, -75);
+    ctx.lineTo(-52, 17);
+    ctx.moveTo(0, -69);
+    ctx.lineTo(74, 13);
+    ctx.moveTo(-66, 17);
+    ctx.lineTo(78, 17);
+    ctx.moveTo(-58, 13);
+    ctx.lineTo(-58, 28);
+    ctx.moveTo(-36, 13);
+    ctx.lineTo(-36, 29);
+    ctx.moveTo(51, 13);
+    ctx.lineTo(51, 27);
+    ctx.moveTo(70, 12);
+    ctx.lineTo(70, 22);
+    ctx.stroke();
+
+    ctx.fillStyle = palette.ship;
+    ctx.beginPath();
+    ctx.rect(42, -22, 15, 32);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.34)";
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(-96, 62);
+    ctx.bezierCurveTo(-58, 72, 50, 74, 102, 59);
+    ctx.moveTo(-72, 73);
+    ctx.bezierCurveTo(-36, 82, 31, 82, 68, 72);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawHeader(t) {
+    const w = state.width;
+    ctx.save();
+    ctx.fillStyle = palette.title;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic";
+    ctx.font = `800 ${Math.max(34, Math.min(64, w / 18))}px ${uiFont}`;
+    ctx.shadowColor = "rgba(255, 255, 255, 0.85)";
+    ctx.shadowBlur = 16;
+    ctx.fillText("Ghost Ships of Ireland's Coast", w / 2, Math.max(62, state.height * 0.08));
+    ctx.shadowBlur = 0;
+    ctx.font = `400 ${Math.max(14, Math.min(22, w / 64))}px ${uiFont}`;
+    ctx.fillStyle = palette.muted;
+    ctx.fillText(`${d3.format(",")(nameCount)} named wrecks drifting through ${d3.format(",")(recordCount)} Irish maritime records`, w / 2, Math.max(90, state.height * 0.08 + 32));
+    ctx.restore();
+  }
+
+  function drawFrame(elapsed) {
+    const t = elapsed / 1000;
+    const w = state.width;
+    const h = state.height;
+    ctx.clearRect(0, 0, w, h);
+    const grd = ctx.createLinearGradient(0, 0, 0, h);
+    grd.addColorStop(0, palette.skyTop);
+    grd.addColorStop(0.38, "#f4f4f4");
+    grd.addColorStop(1, palette.skyBottom);
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, w, h);
+
+    // A faint old-chart vignette for a shipwreck-site atmosphere.
+    const fog = ctx.createRadialGradient(w * 0.5, h * 0.15, 20, w * 0.5, h * 0.2, Math.max(w, h) * 0.8);
+    fog.addColorStop(0, "rgba(0, 0, 0, 0.06)");
+    fog.addColorStop(1, "rgba(255, 255, 255, 0)");
+    ctx.fillStyle = fog;
+    ctx.fillRect(0, 0, w, h);
+
+    drawHeader(t);
+
+    const seaTop = state.rows.length ? state.rows[0].y - 26 : h * 0.28;
+    ctx.strokeStyle = palette.seaLine;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    for (let x = 0; x <= w; x += 12) {
+      const y = seaTop + Math.sin(x * 0.014 + t * 1.6) * 4;
+      if (x === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    const shipScale = Math.max(0.76, Math.min(1.2, w / 1050));
+    const shipWrap = w + 220;
+    const shipX = ((state.ship.x - t * state.ship.speed + 140) % shipWrap + shipWrap) % shipWrap - 110;
+
+    function waveY(row, x, t) {
+      return row.y + Math.sin(x * row.freq + t * 1.15 + row.phase) * row.amp;
+    }
+
+    // Draw subtle wave paths first; the names ride exactly on these paths.
+    ctx.strokeStyle = palette.waveLine;
+    ctx.lineWidth = 0.75;
+    for (const row of state.rows) {
+      ctx.beginPath();
+      for (let x = -20; x <= w + 20; x += 10) {
+        const y = waveY(row, x, t);
+        if (x === -20) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = palette.text;
+    state.hits = [];
+    for (const row of state.rows) {
+      const total = row.totalWidth;
+      const offset = -((t * row.speed + row.start) % total);
+      row.names.forEach((item, i) => {
+        let x = offset + row.offsets[i];
+        while (x < -item.width) x += total;
+        while (x > w + item.width) x -= total;
+        if (x < -item.width || x > w + item.width) return;
+        const y = waveY(row, x, t);
+        const slope = Math.cos(x * row.freq + t * 1.15 + row.phase) * row.amp * row.freq;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(Math.atan(slope));
+        ctx.font = `italic ${item.size}px ${fontStack}`;
+        ctx.fillStyle = palette.text;
+        ctx.fillText(item.name, 0, 0);
+        state.hits.push({
+          name: item.name,
+          info: item.info,
+          x,
+          y,
+          width: item.width,
+          height: item.size * 1.5
+        });
+        ctx.restore();
+      });
+    }
+
+    drawShip(shipX, state.ship.y, shipScale, t);
+
+    if (!prefersReduced) requestAnimationFrame(drawFrame);
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "—")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function showInfo(info) {
+    if (!info) return;
+    panel.innerHTML = `
+      <button id="wreck-info-close" type="button" aria-label="Close ship details">×</button>
+      <p class="eyebrow">Wreck inventory</p>
+      <h2>${escapeHtml(info.name)}</h2>
+      <dl>
+        <dt>Records</dt><dd>${escapeHtml(d3.format(",")(info.records || 0))}</dd>
+        <dt>Years</dt><dd>${escapeHtml(info.year_span || "Year unknown")}</dd>
+        <dt>Type</dt><dd>${escapeHtml(info.classification || "Unknown")}</dd>
+        <dt>Place</dt><dd>${escapeHtml(info.place || "Location not listed")}</dd>
+        ${info.wreck_no ? `<dt>IDs</dt><dd>${escapeHtml(info.wreck_no)}</dd>` : ""}
+      </dl>
+      <p class="description">${escapeHtml(info.description || "No description available.")}</p>
+    `;
+    panel.classList.add("is-visible");
+    panel.querySelector("button").addEventListener("click", () => panel.classList.remove("is-visible"));
+  }
+
+  function pickName(event) {
+    const rect = canvas.getBoundingClientRect();
+    const px = event.clientX - rect.left;
+    const py = event.clientY - rect.top;
+    let best = null;
+    let bestDistance = Infinity;
+    for (const hit of state.hits) {
+      const withinX = px >= hit.x - 6 && px <= hit.x + hit.width + 6;
+      const withinY = py >= hit.y - hit.height && py <= hit.y + hit.height;
+      if (!withinX || !withinY) continue;
+      const dx = Math.max(hit.x - px, 0, px - (hit.x + hit.width));
+      const dy = Math.abs(py - hit.y);
+      const distance = dx * dx + dy * dy;
+      if (distance < bestDistance) {
+        best = hit;
+        bestDistance = distance;
+      }
+    }
+    if (best) showInfo(best.info);
+  }
+
+  canvas.addEventListener("click", pickName);
+  canvas.addEventListener("mousemove", event => {
+    const rect = canvas.getBoundingClientRect();
+    const px = event.clientX - rect.left;
+    const py = event.clientY - rect.top;
+    const hovering = state.hits.some(hit =>
+      px >= hit.x - 6 && px <= hit.x + hit.width + 6 &&
+      py >= hit.y - hit.height && py <= hit.y + hit.height
+    );
+    canvas.style.cursor = hovering ? "pointer" : "crosshair";
+  });
+  closePanel.addEventListener("click", () => panel.classList.remove("is-visible"));
+
+  window.addEventListener("resize", resize);
+  resize();
+  requestAnimationFrame(drawFrame);
+})();
+</script>
+```
