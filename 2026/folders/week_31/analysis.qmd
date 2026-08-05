@@ -1,0 +1,308 @@
+---
+title: "Two markets dominate Lesotho's wool trade"
+subtitle: "South Africa and China account for 97.4% of the $467M reported in 2010-2024"
+author: "Deepali Kank"
+date: 2026-08-04
+format:
+  html:
+    theme: cosmo
+    toc: false
+    embed-resources: true
+page-layout: full
+execute:
+  echo: false
+  warning: false
+  message: false
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+# Packages ---------------------------------------------------------------
+
+library(tidyverse)
+library(ggforce)
+library(ggtext)
+library(scales)
+
+# Data -------------------------------------------------------------------
+
+basotho_wool <- readr::read_csv(
+  "https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2026/2026-08-04/basotho_wool.csv"
+)
+
+plot_data <- basotho_wool |>
+  summarise(
+    annual_value = sum(primary_value, na.rm = TRUE),
+    .by = c(reporter_desc, ref_year)
+  )
+
+country_totals <- plot_data |>
+  summarise(total_value = sum(annual_value), .by = reporter_desc) |>
+  arrange(desc(total_value)) |>
+  mutate(
+    country_id = row_number(),
+    country_color = c("#d95d39", "#236b73", "#d8a72d", "#6b5ca5")
+  )
+
+plot_data <- plot_data |>
+  left_join(country_totals, by = join_by(reporter_desc)) |>
+  complete(
+    nesting(
+      reporter_desc,
+      total_value,
+      country_id,
+      country_color
+    ),
+    ref_year = 2010:2024
+  ) |>
+  mutate(
+    has_record = !is.na(annual_value)
+  )
+
+# Miscs ------------------------------------------------------------------
+
+color_paper <- "#f5efe5"
+color_ink <- "#392f2a"
+chart_font <- "Gill Sans"
+
+theme_set(
+  theme_void(base_size = 15, base_family = chart_font) +
+    theme(
+      plot.background = element_rect(fill = color_paper, color = NA),
+      panel.background = element_rect(fill = color_paper, color = NA),
+      plot.title = element_text(
+        family = chart_font,
+        color = color_ink,
+        face = "bold",
+        size = 30,
+        margin = margin(b = 14)
+      ),
+      plot.subtitle = element_textbox_simple(
+        family = chart_font,
+        color = "#665a51",
+        size = 16,
+        lineheight = 1.15,
+        hjust = 0,
+        halign = 0,
+        valign = 1,
+        width = grid::unit(1, "npc"),
+        padding = margin(0, 0, 0, 0),
+        margin = margin(b = 18),
+        fill = NA,
+        box.colour = NA
+      ),
+      plot.caption = element_text(
+        family = chart_font,
+        color = "#74685e",
+        size = 9.5,
+        hjust = 0,
+        lineheight = 1.15,
+        margin = margin(t = 14)
+      ),
+      plot.margin = margin(25, 35, 35, 35)
+    )
+)
+
+# Texts ------------------------------------------------------------------
+
+source_note <- paste(
+  "Source: UN Comtrade via TidyTuesday (2026-08-04).| Graphic: Deepali Kank"
+)
+
+total_trade <- sum(country_totals$total_value)
+top_two_value <- sum(slice_head(country_totals, n = 2)$total_value)
+top_two_share <- top_two_value / total_trade
+```
+
+## Two markets dominate the recorded value
+
+Each country is a dense panel of the same narrow V-stitch, attached to the same
+pair of needles and hanging downward. Only the panel length changes. The chart
+uses a logarithmic length scale so the two smaller destinations remain visible
+alongside the much larger South African and Chinese totals.
+
+```{r}
+#| label: knitted-trade
+#| fig-width: 10
+#| fig-height: 10
+#| fig-align: center
+#| out-width: 100%
+
+# Plots ------------------------------------------------------------------
+
+stitch_height <- 0.5
+knit_top <- 14.7
+
+country_labels <- country_totals |>
+  mutate(
+    total_label = dollar(total_value, scale_cut = cut_short_scale()),
+    height_units = (log10(total_value) - 5) / 0.25,
+    row_count = pmax(2L, as.integer(round(height_units / stitch_height))),
+    knit_bottom = knit_top - row_count * stitch_height
+  )
+
+stitch_data <- country_labels |>
+  tidyr::uncount(row_count, .id = "row_number") |>
+  tidyr::crossing(
+    cable_number = 1:5,
+    side = c(-1, 1),
+    t = seq(0, 1, length.out = 28)
+  ) |>
+  mutate(
+    cable_x = country_id + (cable_number - 3) * 0.14,
+    x = cable_x + side * 0.068 * sin(pi * t),
+    y = knit_top - (row_number - 1 + t) * stitch_height,
+    stitch_id = str_c(
+      reporter_desc,
+      row_number,
+      cable_number,
+      side,
+      sep = "_"
+    )
+  )
+
+attachment_data <- country_labels |>
+  tidyr::crossing(cable_number = 1:5) |>
+  mutate(
+    x = country_id + (cable_number - 3) * 0.14,
+    y = knit_top,
+    yend = 15.36
+  )
+
+value_guides <- tibble(
+  guide_value = c(1e5, 1e6, 1e7, 1e8),
+  y = knit_top - (log10(guide_value) - 5) / 0.25,
+  label = dollar(guide_value, scale_cut = cut_short_scale())
+)
+
+p <- ggplot() +
+  geom_hline(
+    data = value_guides,
+    aes(yintercept = y),
+    color = "#ddd1c3",
+    linewidth = 0.45,
+    linetype = "dotted"
+  ) +
+  geom_rect(
+    data = country_labels,
+    aes(
+      xmin = country_id - 0.36,
+      xmax = country_id + 0.36,
+      ymin = knit_bottom,
+      ymax = knit_top,
+      fill = I(country_color)
+    ),
+    color = color_ink,
+    linewidth = 0.75,
+    alpha = 0.14
+  ) +
+  geom_path(
+    data = stitch_data,
+    aes(x, y, group = stitch_id),
+    color = color_ink,
+    linewidth = 2.25,
+    lineend = "round"
+  ) +
+  geom_path(
+    data = stitch_data,
+    aes(x, y, group = stitch_id, color = I(country_color)),
+    linewidth = 1.25,
+    lineend = "round"
+  ) +
+  geom_segment(
+    data = attachment_data,
+    aes(x = x, xend = x, y = y, yend = yend),
+    color = color_ink,
+    linewidth = 2.25,
+    lineend = "round"
+  ) +
+  geom_segment(
+    data = attachment_data,
+    aes(
+      x = x,
+      xend = x,
+      y = y,
+      yend = yend,
+      color = I(country_color)
+    ),
+    linewidth = 1.25,
+    lineend = "round"
+  ) +
+  annotate(
+    "segment",
+    x = 0.38,
+    xend = 4.55,
+    y = 15.35,
+    yend = 15.35,
+    color = color_ink,
+    linewidth = 2.15,
+    lineend = "round"
+  ) +
+  annotate(
+    "segment",
+    x = 0.48,
+    xend = 4.66,
+    y = 15.68,
+    yend = 15.68,
+    color = color_ink,
+    linewidth = 2.15,
+    lineend = "round"
+  ) +
+  annotate(
+    "point",
+    x = c(4.58, 4.69),
+    y = c(15.35, 15.68),
+    shape = 21,
+    size = 7,
+    stroke = 1.4,
+    color = color_ink,
+    fill = color_paper
+  ) +
+  geom_text(
+    data = country_labels,
+    aes(
+      country_id,
+      knit_bottom - 1.18,
+      label = reporter_desc,
+      color = I(country_color)
+    ),
+    family = chart_font,
+    fontface = "bold",
+    size = 3.9,
+    vjust = 1
+  ) +
+  geom_label(
+    data = country_labels,
+    aes(country_id, knit_bottom - 0.62, label = total_label),
+    family = chart_font,
+    color = color_ink,
+    fill = color_paper,
+    label.size = 0,
+    label.padding = grid::unit(0.12, "lines"),
+    fontface = "bold",
+    size = 3.65
+  ) +
+  geom_text(
+    data = value_guides,
+    aes(0.4, y, label = label),
+    color = "#786b61",
+    size = 3.1,
+    hjust = 1
+  ) +
+  coord_cartesian(
+    xlim = c(0.04, 4.92),
+    ylim = c(-1.45, 16.05),
+    clip = "off"
+  ) +
+  labs(
+    title = "A Trade Woven from Lesotho",
+    subtitle = "The country’s wool trade connected local production to markets across southern Africa and Asia. Reported import values show where Lesotho’s wool travelled and how much each destination received.",
+    caption = str_wrap(source_note, width = 125)
+  )
+
+p
+```
