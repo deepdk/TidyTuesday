@@ -1,3 +1,9 @@
+week 33 - [IELTS Scores](https://github.com/deepdk/TidyTuesday/tree/main/2026/folders/week_33)
+
+<img width="1038" height="720" alt="chrome-capture-2026-08-20" src="https://github.com/user-attachments/assets/70562866-547e-45ea-be8a-41aed1be6582" />
+
+---
+
 week 31 - [Basotho Wool](https://github.com/deepdk/TidyTuesday/tree/main/2026/folders/week_31)
 
 <img width="1920" height="1920" alt="image" src="https://github.com/user-attachments/assets/cd926548-d367-477d-a12a-80545a41736a" />
