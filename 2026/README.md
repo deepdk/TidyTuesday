@@ -1,3 +1,9 @@
+week 34 - [Country Music Lyric](https://github.com/deepdk/TidyTuesday/tree/main/2026/folders/week_34)
+
+<img width="1677" height="1219" alt="image" src="https://github.com/user-attachments/assets/184cf8bc-d68a-447b-b37c-2034511a42b2" />
+
+---
+
 week 33 - [IELTS Scores](https://github.com/deepdk/TidyTuesday/tree/main/2026/folders/week_33)
 
 <img width="1038" height="720" alt="chrome-capture-2026-08-20" src="https://github.com/user-attachments/assets/70562866-547e-45ea-be8a-41aed1be6582" />
