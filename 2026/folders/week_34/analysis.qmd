@@ -1,0 +1,597 @@
+---
+format:
+  html:
+    toc: false
+    embed-resources: true
+    page-layout: full
+execute:
+  echo: false
+  warning: false
+  message: false
+editor_options:
+  chunk_output_type: console
+---
+
+```{=html}
+<style>
+:root {
+  --tt34-baby-lavender: #dbc0e8;
+  --tt34-blue-skies: #a3c1e2;
+  --tt34-daffodil: #f7e289;
+  --tt34-night-time: #252d45;
+  --tt34-peaches: #fbb28b;
+  --tt34-poppy-fields: #f76f5a;
+  --tt34-sage: #a9b49a;
+  --tt34-fuchsia-flowers: #ea5e86;
+  --tt34-pool-time: #47b5a8;
+  --tt34-cotton-candy: #f9a2c5;
+  --tt34-muted-eggplant: #6b515e;
+  --tt34-hay-fields: #b79a65;
+  --tt34-paper: var(--tt34-night-time);
+  --tt34-ink: #f7f2ec;
+  --tt34-muted: var(--tt34-baby-lavender);
+  --tt34-rule: var(--tt34-muted-eggplant);
+  --tt34-font: "Avenir Next", Avenir, "Helvetica Neue", Arial, sans-serif;
+}
+
+.quarto-title-block,
+.cell-output-display {
+  font-family: var(--tt34-font);
+}
+
+.tt34-picker {
+  position: absolute;
+  top: clamp(1.7rem, 4vw, 2.8rem);
+  left: 50%;
+  z-index: 4;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0.55rem 0.75rem;
+  width: calc(100% - 3rem);
+  max-width: 58rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  transform: translateX(-50%);
+}
+
+.tt34-choice {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.24rem;
+  min-width: 3.5rem;
+  cursor: pointer;
+}
+
+.tt34-choice input {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+}
+
+.tt34-selector-record {
+  position: relative;
+  display: grid;
+  width: clamp(3rem, 4.1vw, 3.6rem);
+  aspect-ratio: 1;
+  place-items: center;
+  background: var(--word-color);
+  border: 1px solid color-mix(in srgb, var(--word-color) 78%, white);
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+    inset 0 0 0 0.32rem rgba(255, 255, 255, 0.14),
+    inset 0 0 0 0.38rem rgba(37, 45, 69, 0.16),
+    inset 0 0 0 0.68rem rgba(255, 255, 255, 0.1),
+    0 0.2rem 0.45rem color-mix(in srgb, var(--word-color) 14%, transparent);
+  transition: transform 150ms ease, box-shadow 150ms ease, opacity 150ms ease;
+}
+
+.tt34-selector-record::before {
+  position: absolute;
+  width: 46%;
+  aspect-ratio: 1;
+  background: var(--tt34-night-time);
+  border: 1px solid color-mix(in srgb, var(--tt34-baby-lavender) 65%, transparent);
+  border-radius: 50%;
+  content: "";
+}
+
+.tt34-selector-record::after {
+  content: none;
+}
+
+.tt34-selector-percent {
+  position: relative;
+  z-index: 1;
+  color: var(--tt34-ink);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+
+.tt34-selector-word {
+  color: var(--tt34-ink);
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.tt34-choice:hover .tt34-selector-record {
+  transform: translateY(-2px) rotate(-2deg);
+}
+
+.tt34-choice input:checked + .tt34-selector-record {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.24),
+    inset 0 0 0 0.32rem rgba(255, 255, 255, 0.16),
+    inset 0 0 0 0.38rem rgba(37, 45, 69, 0.18),
+    inset 0 0 0 0.68rem rgba(255, 255, 255, 0.12),
+    0 0 0 2px #fff,
+    0 0 0 3.5px var(--word-color),
+    0 0.3rem 0.65rem color-mix(in srgb, var(--word-color) 22%, transparent);
+}
+
+.tt34-choice input:not(:checked) + .tt34-selector-record {
+  opacity: 0.86;
+}
+
+.tt34-choice input:focus-visible + .tt34-selector-record {
+  outline: 3px solid color-mix(in srgb, var(--word-color) 45%, white);
+  outline-offset: 3px;
+}
+
+.tt34-card {
+  max-width: 71.25rem;
+  margin: 0 auto;
+  padding: clamp(1.1rem, 3vw, 1.9rem);
+  overflow: hidden;
+  color: var(--tt34-ink);
+  background: var(--tt34-paper);
+  border: 1px solid color-mix(in srgb, var(--tt34-muted-eggplant) 78%, transparent);
+  border-radius: 1.25rem;
+  box-shadow: 0 1.1rem 2.5rem rgba(15, 18, 29, 0.28);
+  font-family: var(--tt34-font);
+}
+
+.tt34-card h2 {
+  margin: 0;
+  padding-bottom: 0;
+  color: var(--tt34-ink);
+  border-bottom: 0;
+  font-size: clamp(1.65rem, 3.5vw, 2.35rem);
+  font-variant: small-caps;
+  letter-spacing: 0.025em;
+  text-align: center;
+}
+
+.tt34-deck {
+  max-width: 52rem;
+  margin: 0.4rem auto 1.1rem;
+  color: var(--tt34-ink);
+  font-size: clamp(0.9rem, 1.5vw, 1rem);
+  font-style: italic;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.tt34-chart {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.tt34-chart svg {
+  width: 100%;
+  height: auto;
+}
+
+.tt34-source {
+  margin-top: 0.9rem;
+  color: var(--tt34-ink);
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tt34-selector-record {
+    transition: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .tt34-chart,
+  .tt34-chart svg {
+    min-height: 20rem;
+  }
+
+  .tt34-picker {
+    top: 1rem;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    gap: 0.6rem;
+    width: calc(100% - 1rem);
+    padding: 0.25rem 0.4rem 0.7rem;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  .tt34-choice {
+    min-width: 3.25rem;
+  }
+
+  .tt34-selector-record {
+    width: 3rem;
+  }
+}
+</style>
+```
+
+```{ojs}
+lyricData = {
+const lyricsCsv = await d3.csv(
+  "https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2026/2026-08-25/country_lyrics.csv",
+  {proxy: true}
+);
+
+const stopwords = new Set(`
+a about above after again against all am an and any are aren't as at be because been before being below between both but by
+can't cannot could couldn't did didn't do does doesn't doing don't down during each few for from further had hadn't has hasn't
+have haven't having he he'd he'll he's her here here's hers herself him himself his how how's i i'd i'll i'm i've if in into is
+isn't it it's its itself let's me more most mustn't my myself no nor not of off on once only or other ought our ours ourselves
+out over own same shan't she she'd she'll she's should shouldn't so some such than that that's the their theirs them themselves
+then there there's these they they'd they'll they're they've this those through to too under until up very was wasn't we we'd
+we'll we're we've were weren't what what's when when's where where's which while who who's whom why why's with won't would
+wouldn't you you'd you'll you're you've your yours yourself yourselves
+im youre youll ill hes shes theyre weve ive dont didnt cant wont isnt arent wasnt werent doesnt couldnt shouldnt wouldnt
+oh yeah hey na la ooh whoa ah gonna wanna gotta cause ain't ain aint just like got get one two would could well still even
+never know knew knows make made take took come came go went say said see saw look looked back down around
+can every little right way good now let want long
+`.trim().split(/\s+/));
+
+function tokenize(text) {
+  return (text || "")
+    .toLowerCase()
+    .replace(/[’']/g, "'")
+    .match(/[a-z']+/g) || [];
+}
+
+const songs = lyricsCsv.map(row => {
+  const allTokens = tokenize(row.lyrics).map(word => word.replace(/^'+|'+$/g, ""));
+  const tokens = allTokens.filter(word => word.length >= 3 && !stopwords.has(word));
+  return {
+    song: row.song,
+    artist: row.artist,
+    year: +row.entered_top_30_in,
+    lyrics: row.lyrics || "",
+    tokens,
+    wordCount: allTokens.filter(Boolean).length
+  };
+});
+
+const songYears = Array.from(new Set(songs.map(d => d.year))).sort(d3.ascending);
+const wordCounts = d3.rollups(
+  songs.flatMap(song => song.tokens),
+  values => values.length,
+  word => word
+)
+  .map(([word, count]) => ({word, count}))
+  .sort((a, b) => d3.descending(a.count, b.count));
+
+const rankedWords = wordCounts.slice(0, 10);
+const wordPalette = [
+  "#dbc0e8", "#a3c1e2", "#f7e289", "#fbb28b", "#f76f5a",
+  "#a9b49a", "#ea5e86", "#47b5a8", "#f9a2c5", "#b79a65"
+];
+const colorMap = new Map(rankedWords.map((d, index) => [d.word, wordPalette[index]]));
+const wordStats = rankedWords
+  .map(d => {
+    const songCount = songs.filter(song => song.tokens.includes(d.word)).length;
+    return {...d, songCount, share: songCount / songs.length};
+  })
+  .sort((a, b) => d3.descending(a.songCount, b.songCount) || d3.descending(a.count, b.count));
+const wordChoices = wordStats.map(d => d.word);
+const neutralColor = "#737986";
+const neutralStroke = "#aeb4c0";
+
+return {lyricsCsv, songs, songYears, wordChoices, wordStats, colorMap, neutralColor, neutralStroke};
+}
+```
+
+```{ojs}
+viewof selectedWord = (() => {
+  const {wordStats, colorMap} = lyricData;
+  const picker = document.createElement("fieldset");
+  picker.className = "tt34-picker";
+  picker.setAttribute("aria-label", "Highlight a lyric word");
+  picker.value = wordStats[0].word;
+
+  wordStats.forEach(({word, share}) => {
+    const label = document.createElement("label");
+    label.className = "tt34-choice";
+    label.style.setProperty("--word-color", colorMap.get(word));
+
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = "tt34-word";
+    input.value = word;
+    input.checked = word === picker.value;
+    input.setAttribute("aria-label", `${word}, ${d3.format(".0%")(share)} of songs`);
+
+    const record = document.createElement("span");
+    record.className = "tt34-selector-record";
+
+    const percentage = document.createElement("span");
+    percentage.className = "tt34-selector-percent";
+    percentage.textContent = d3.format(".0%")(share);
+    record.appendChild(percentage);
+
+    const text = document.createElement("span");
+    text.className = "tt34-selector-word";
+    text.textContent = word;
+    label.append(input, record, text);
+    picker.appendChild(label);
+  });
+
+  picker.addEventListener("change", event => {
+    picker.value = event.target.value;
+    picker.dispatchEvent(new CustomEvent("input"));
+  });
+
+  return picker;
+})()
+```
+
+```{ojs}
+bubbleLayout = {
+const {songs, songYears} = lyricData;
+const chartWidth = 1100;
+const chartHeight = 620;
+const chartMargin = {top: 40, right: 30, bottom: 60, left: 30};
+const yearX = d3.scalePoint(
+  songYears,
+  [chartMargin.left + 50, chartWidth - chartMargin.right - 50]
+).padding(0.6);
+const radius = d3.scaleSqrt(d3.extent(songs, d => d.wordCount), [4.5, 12]);
+
+const bubbleNodes = songs.map((song, index) => ({
+  ...song,
+  targetX: yearX(song.year),
+  x: yearX(song.year) + ((index % 7) - 3) * 1.5,
+  y: chartHeight / 2 + ((index % 11) - 5) * 1.5,
+  r: radius(song.wordCount)
+}));
+
+const simulation = d3.forceSimulation(bubbleNodes)
+  .force("x", d3.forceX(d => d.targetX).strength(0.09))
+  .force("y", d3.forceY(chartHeight / 2).strength(0.05))
+  .force("collide", d3.forceCollide(d => d.r + 1.4).strength(0.95))
+  .stop();
+
+for (let index = 0; index < 500; index += 1) simulation.tick();
+
+for (const node of bubbleNodes) {
+  node.y = Math.max(
+    chartMargin.top + node.r,
+    Math.min(chartHeight - chartMargin.bottom + 10 - node.r, node.y)
+  );
+}
+
+return {chartWidth, chartHeight, chartMargin, yearX, bubbleNodes};
+}
+```
+
+```{ojs}
+chartCard = {
+const {songYears, colorMap, neutralColor, neutralStroke} = lyricData;
+const {chartWidth, chartHeight, chartMargin, yearX, bubbleNodes} = bubbleLayout;
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function bubbleField(nodes, selectedWord, selectedColor) {
+  const data = nodes
+    .map(node => {
+      const occurrences = node.tokens.filter(word => word === selectedWord).length;
+      return {...node, occurrences, isMatch: occurrences > 0};
+    })
+    .sort((a, b) => d3.ascending(a.isMatch, b.isMatch));
+
+  const svg = d3.create("svg")
+    .attr("viewBox", [0, 0, chartWidth, chartHeight])
+    .attr("role", "img")
+    .attr(
+      "aria-label",
+      `A beeswarm of ${data.length} country songs by year. Colored vinyl records contain the word ${selectedWord}.`
+    )
+    .attr("font-family", "'Avenir Next',Avenir,'Helvetica Neue',Arial,sans-serif")
+    .style("display", "block");
+
+  svg.append("rect")
+    .attr("width", chartWidth)
+    .attr("height", chartHeight)
+    .attr("rx", 18)
+    .attr("fill", "#252d45");
+
+  const plot = svg.append("g");
+  plot.selectAll("line.tt34-grid")
+    .data(songYears)
+    .join("line")
+    .attr("class", "tt34-grid")
+    .attr("x1", yearX)
+    .attr("x2", yearX)
+    .attr("y1", chartMargin.top - 6)
+    .attr("y2", chartHeight - chartMargin.bottom + 4)
+    .attr("stroke", "#a3c1e2")
+    .attr("stroke-opacity", 0.2);
+
+  const bubbles = plot.selectAll("g.tt34-record")
+    .data(data)
+    .join("g")
+    .attr("class", "tt34-record")
+    .attr("transform", d => `translate(${d.x},${d.y})`)
+    .attr("role", "img")
+    .attr("aria-label", d => `${d.song} by ${d.artist}, ${d.year}`)
+    .attr("tabindex", 0)
+    .style("cursor", "pointer");
+
+  bubbles.append("circle")
+    .attr("class", "tt34-record-edge")
+    .attr("r", d => d.r)
+    .attr("fill", d => d.isMatch ? selectedColor : neutralColor)
+    .attr("fill-opacity", d => d.isMatch ? 0.97 : 0.82)
+    .attr("stroke", d => d.isMatch ? d3.color(selectedColor).brighter(0.45).formatHex() : neutralStroke)
+    .attr("stroke-width", d => d.isMatch ? 0.9 : 0.65)
+    .attr("stroke-opacity", 0.78);
+
+  bubbles.append("circle")
+    .attr("r", d => d.r * 0.73)
+    .attr("fill", "none")
+    .attr("stroke", d => d.isMatch ? "#252d45" : "#4f5562")
+    .attr("stroke-width", d => Math.max(0.35, d.r * 0.055))
+    .attr("stroke-opacity", d => d.isMatch ? 0.3 : 0.2);
+
+  bubbles.append("circle")
+    .attr("r", d => d.r * 0.49)
+    .attr("fill", "none")
+    .attr("stroke", d => d.isMatch ? "#ffffff" : "#c7cbd3")
+    .attr("stroke-width", d => Math.max(0.3, d.r * 0.045))
+    .attr("stroke-opacity", d => d.isMatch ? 0.24 : 0.2);
+
+  bubbles.append("circle")
+    .attr("r", d => Math.max(1.35, d.r * 0.27))
+    .attr("fill", d => d.isMatch ? "#252d45" : "#555b68")
+    .attr("stroke", d => d.isMatch ? selectedColor : "#aeb4c0")
+    .attr("stroke-width", 0.35);
+
+  bubbles.append("circle")
+    .attr("r", d => Math.max(0.38, d.r * 0.065))
+    .attr("fill", d => d.isMatch ? "#f7e289" : "#d5d8df");
+
+  plot.selectAll("text.tt34-year")
+    .data(songYears)
+    .join("text")
+    .attr("class", "tt34-year")
+    .attr("x", yearX)
+    .attr("y", chartHeight - chartMargin.bottom + 28)
+    .attr("text-anchor", "middle")
+    .attr("fill", "#f7f2ec")
+    .attr("font-size", 15)
+    .attr("font-weight", 600)
+    .style("font-variant", "small-caps")
+    .style("letter-spacing", "0.5px")
+    .text(year => year);
+
+  const wrapper = document.createElement("div");
+  wrapper.style.position = "relative";
+  wrapper.style.width = "100%";
+  wrapper.style.lineHeight = "0";
+  wrapper.appendChild(svg.node());
+
+  const tip = document.createElement("div");
+  Object.assign(tip.style, {
+    position: "absolute",
+    pointerEvents: "none",
+    opacity: "0",
+    transition: "opacity 120ms ease",
+    background: "#303850",
+    border: `1px solid ${selectedColor}cc`,
+    borderRadius: "12px",
+    padding: "10px 12px",
+    boxShadow: "0 9px 24px rgba(8, 10, 18, 0.42)",
+    fontFamily: "'Avenir Next',Avenir,'Helvetica Neue',Arial,sans-serif",
+    fontSize: "13px",
+    lineHeight: "1.35",
+    color: "#f7f2ec",
+    width: "min(230px, 70vw)",
+    zIndex: "5"
+  });
+  wrapper.appendChild(tip);
+
+  function tooltipMarkup(d) {
+    const wordLine = d.isMatch
+      ? `<strong style="color:${selectedTextColor}">${escapeHtml(selectedWord)}</strong> appears ${d.occurrences} ${d.occurrences === 1 ? "time" : "times"}`
+      : `<strong style="color:${selectedTextColor}">${escapeHtml(selectedWord)}</strong> does not appear`;
+    return `<div style="font-weight:700;font-size:15px;margin-bottom:2px">${escapeHtml(d.song)}</div>
+      <div style="color:#f7f2ec;font-size:12px;margin-bottom:7px">${escapeHtml(d.artist)} · ${d.year}</div>
+      <div>${wordLine}</div>
+      <div style="color:#f7f2ec;font-size:11.5px;margin-top:3px">${d3.format(",")(d.wordCount)} lyric words</div>`;
+  }
+
+  function positionTooltip(event) {
+    const bounds = wrapper.getBoundingClientRect();
+    const x = event.clientX - bounds.left;
+    const y = event.clientY - bounds.top;
+    const tooltipWidth = Math.min(230, bounds.width * 0.7);
+    tip.style.left = `${x > bounds.width - tooltipWidth - 24 ? x - tooltipWidth - 16 : x + 14}px`;
+    tip.style.top = `${Math.max(4, y - 52)}px`;
+  }
+
+  function showTooltip(event, d) {
+    const record = d3.select(event.currentTarget).raise();
+    record.select(".tt34-record-edge").attr("stroke-width", 2).attr("stroke-opacity", 1);
+    tip.innerHTML = tooltipMarkup(d);
+    tip.style.opacity = "1";
+    if (Number.isFinite(event.clientX)) positionTooltip(event);
+  }
+
+  function hideTooltip(event, d) {
+    d3.select(event.currentTarget).select(".tt34-record-edge")
+      .attr("stroke-width", d.isMatch ? 1 : 0.7)
+      .attr("stroke-opacity", 0.78);
+    tip.style.opacity = "0";
+  }
+
+  bubbles
+    .on("pointerenter", showTooltip)
+    .on("pointermove", positionTooltip)
+    .on("pointerleave", hideTooltip)
+    .on("focus", function(event, d) {
+      const bounds = this.getBoundingClientRect();
+      showTooltip({
+        currentTarget: this,
+        clientX: bounds.left + bounds.width / 2,
+        clientY: bounds.top + bounds.height / 2
+      }, d);
+    })
+    .on("blur", hideTooltip);
+
+  return {
+    node: wrapper,
+    total: data.length,
+    matches: data.filter(d => d.isMatch).length
+  };
+}
+
+const selectedColor = colorMap.get(selectedWord);
+const selectedTextColor = selectedColor;
+const bubbleChart = bubbleField(bubbleNodes, selectedWord, selectedColor);
+const percentMatch = d3.format(".0%")(bubbleChart.matches / bubbleChart.total);
+
+const bubbleCard = html`<section class="tt34-card" style="border-color:${selectedColor}88">
+  <h2>A country music hit parade of words</h2>
+  <p class="tt34-deck">
+    <strong style="color:${selectedTextColor}">${selectedWord}</strong> appears in
+    ${d3.format(",")(bubbleChart.matches)} of ${d3.format(",")(bubbleChart.total)} songs (${percentMatch}).
+    Each little record is one Top 30 hit, gathered by entry year and sized by lyric length.
+  </p>
+  <div class="tt34-chart">${viewof selectedWord}${bubbleChart.node}</div>
+  <div class="tt34-source">
+    Source: Country Music Lyrics TdidyTuesday week 34 2026 · Graphic: Deepali Kank
+  </div>
+</section>`;
+
+return bubbleCard;
+}
+```
